@@ -1,0 +1,51 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" 
+    >
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="50dip"
+       android:orientation="horizontal"
+       android:layout_margin="20dip"
+       android:layout_marginLeft="20dip"
+       android:layout_marginRight="20dip">
+      <Spinner android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:layout_marginLeft="0dip"
+          android:id="@+id/scene_spinner"
+          android:entries="@array/spingarr"
+          />
+      <Button
+          android:id="@+id/btn_config"
+          android:text="配置"
+          android:layout_marginRight="0dip"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="4"
+         />
+   </LinearLayout>
+
+   <Button 
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:layout_marginLeft="20dip"
+       android:layout_marginRight="20dip"
+       android:layout_marginTop="60dip"
+       android:text="扫描设备"
+       android:id="@+id/scan_dev_btn"
+       />
+
+   <ListView
+       android:id="@+id/lv"
+       android:layout_marginTop="110dip"
+       android:layout_marginLeft="20dip"
+       android:layout_marginRight="20dip"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:layout_marginBottom="50dip">
+     </ListView>
+
+</RelativeLayout>
