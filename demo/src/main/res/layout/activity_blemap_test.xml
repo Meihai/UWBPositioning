@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.onlylemi.mapview.BLEMapActivity">
-   <include layout="@layout/map_view"/>
+    <include layout="@layout/map_view"/>
+    <com.mypopsy.widget.FloatingSearchView
+        android:id="@+id/search_location"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="5dp"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"
+        android:background="#90000000"
+        android:hint="@string/hint"
+        app:logo="@drawable/logo"
+        app:fsv_menu="@menu/search"
+        tools:context="com.onlylemi.mapview.SearchMapActivity"
+        app:theme="@style/CustomFloatingSearchViewTheme"/>
 
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>
+

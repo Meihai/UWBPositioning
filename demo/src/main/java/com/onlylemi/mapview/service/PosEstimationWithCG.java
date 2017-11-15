@@ -1,8 +1,8 @@
 package com.onlylemi.mapview.service;
 
 import com.onlylemi.mapview.utils.ArrayUtil;
-import com.onlylemi.mapview.Constant;
-import com.onlylemi.mapview.utils.LogUtil;
+import com.onlylemi.mapview.parameter.Constant;
+
 import Jama.Matrix;
 /**
  * Created by admin on 2017/10/26.

@@ -1,6 +1,6 @@
 package com.onlylemi.mapview.service;
 
-import com.onlylemi.mapview.Constant;
+import com.onlylemi.mapview.parameter.Constant;
 import com.onlylemi.mapview.agorithm.trilateration.NonLinearLeastSquaresSolver;
 import com.onlylemi.mapview.agorithm.trilateration.TrilaterationFunction;
 import com.onlylemi.mapview.utils.LogUtil;

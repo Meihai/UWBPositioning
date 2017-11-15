@@ -1,6 +1,8 @@
-package com.onlylemi.mapview.service;
+package com.onlylemi.mapview.parameter;
 
 import android.graphics.PointF;
+
+import com.onlylemi.mapview.service.Point;
 
 import java.util.ArrayList;
 import java.util.List;

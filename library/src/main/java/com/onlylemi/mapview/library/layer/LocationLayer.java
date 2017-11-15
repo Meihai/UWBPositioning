@@ -101,9 +101,11 @@ public class LocationLayer extends MapBaseLayer {
         indicatorArcPaint.setColor(DEFAULT_INDICATOR_ARC_COLOR);
         indicatorArcPaint.setStrokeWidth(compassArcWidth);
 
-        compassIndicatorArrowBitmap = BitmapFactory.decodeResource(mapView.getResources(),
-                R.mipmap.compass);
-        compassBitmapLayer = new BitmapLayer(mapView, compassIndicatorArrowBitmap, null);
+//        compassIndicatorArrowBitmap = BitmapFactory.decodeResource(mapView.getResources(),
+//                R.mipmap.compass);
+//        compassBitmapLayer = new BitmapLayer(mapView, compassIndicatorArrowBitmap, null);
+        //不需要箭头
+        compassBitmapLayer = new BitmapLayer(mapView, null, null);
     }
 
     @Override

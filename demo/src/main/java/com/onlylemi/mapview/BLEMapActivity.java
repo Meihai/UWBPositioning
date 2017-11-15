@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -19,32 +20,66 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.speech.RecognizerIntent;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ActionMenuView;
+import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.Html;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.HapticFeedbackConstants;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mypopsy.drawable.SearchArrowDrawable;
+import com.mypopsy.drawable.ToggleDrawable;
+import com.mypopsy.drawable.model.CrossModel;
+import com.mypopsy.drawable.util.Bezier;
+import com.mypopsy.widget.FloatingSearchView;
+import com.onlylemi.mapview.adapter.ArrayRecyclerAdapter;
+import com.onlylemi.mapview.dagger.DaggerBLEMapComponent;
 import com.onlylemi.mapview.library.MapView;
 import com.onlylemi.mapview.library.MapViewListener;
 import com.onlylemi.mapview.library.layer.LocationLayer;
 import com.onlylemi.mapview.library.layer.MarkLayer;
 import com.onlylemi.mapview.library.layer.RouteLayer;
 import com.onlylemi.mapview.library.utils.MapUtils;
+import com.onlylemi.mapview.parameter.LocationSet;
+import com.onlylemi.mapview.search.SearchController;
+import com.onlylemi.mapview.search.SearchResult;
 import com.onlylemi.mapview.service.BluetoothLeService;
 import com.onlylemi.mapview.service.LocationService;
-import com.onlylemi.mapview.service.TestData;
+import com.onlylemi.mapview.parameter.TestData;
 import com.onlylemi.mapview.utils.LogUtil;
+import com.onlylemi.mapview.utils.PackageUtils;
+import com.onlylemi.mapview.utils.ViewUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Created by admin on 2017/10/30.
  */
-public class BLEMapActivity  extends AppCompatActivity implements SensorEventListener {
+public class BLEMapActivity  extends AppCompatActivity implements SensorEventListener,
+        ActionMenuView.OnMenuItemClickListener,
+        SearchController.Listener{
     private final static String TAG = "BLEMapActivity";
     //蓝牙4.0的UUID,其中0000ffe1-0000-1000-8000-00805f9b34fb是广州汇承信息科技有限公司08蓝牙模块的UUID
     public static String HEART_RATE_MEASUREMENT = "0000ffe1-0000-1000-8000-00805f9b34fb"; //心率测量
@@ -66,7 +101,11 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
     public static final int UPDATE_CURRENT_POS=1; //更新当前位置标志
     public static final String UPDATE_CURRENT_POS_KEY="update_cur_pos_key";
 
-    //public static final String FactoryMap="";
+    //添加搜索框
+    private FloatingSearchView mSearchView;
+    private static final int REQ_CODE_SPEECH_INPUT = 42;
+    private BLEMapActivity.SearchAdapter mAdapter;
+
     //蓝牙连接状态
     private boolean mConnected = false;
     private String status = "disconnected";
@@ -82,6 +121,29 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
     private Handler mhandler = new Handler();
     private static float prevX=100; //记录上一次的坐标
     private static float prevY=100; //记录上一次的坐标
+    //蓝牙service,负责后台的蓝牙服务
+    private static BluetoothLeService mBluetoothLeService;
+    //定位服务
+    private static LocationService mLocationService;
+    private MapView mapView;
+    private LocationLayer locationLayer;
+    private MarkLayer markLayer;
+    private RouteLayer routeLayer;
+    private static List<PointF> nodes;
+    private static List<PointF> nodesContract;
+    private static List<PointF> marks;
+    private static List<String> marksName;
+    private boolean needNavigated=false;
+    private static PointF targetP;
+    private boolean openSensor = false; //是否开启传感器
+    private SensorManager sensorManager; //传感器管理层
+
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    //蓝牙特征值
+    private static BluetoothGattCharacteristic target_chara = null;
+
+    @Inject
+    SearchController mSearch; //搜索控制器通过依赖注入方式注入
     private Handler myHandler=new Handler() {
         // 2.重写消息处理函数
         @Override
@@ -91,17 +153,10 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                 case UPDATE_CURRENT_POS: {
                     // 更新View
                     float[] tag2dpos = msg.getData().getFloatArray(UPDATE_CURRENT_POS_KEY);
-//                    double deltaY=tag2dpos[1]-prevY;
-//                    double deltaX=tag2dpos[0]-prevX;
+
                     prevY=tag2dpos[1];
                     prevX=tag2dpos[0];
-                    //获取角度
-//                    double deg=Math.atan2(deltaY,deltaX);
-//                    deg=90+Math.toDegrees(deg)+mapView.getCurrentRotateDegrees();
                     if(locationLayer!=null){
-//                        locationLayer.setOpenCompass(true);
-//                        locationLayer.setCompassIndicatorCircleRotateDegree(new Float(deg));
-//                        locationLayer.setCompassIndicatorArrowRotateDegree(new Float(deg));
                         if(needNavigated){
                             //todo 添加路径导航功能
                             PointF startPoint=new PointF(prevX,prevY);
@@ -110,6 +165,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                                     List<Integer> routeList=new ArrayList<>();
                                     routeLayer.setRouteList(routeList);
                                     needNavigated=false;
+                                    Toast.makeText( BLEMapActivity.this,"你已经到达终点附近了，谢谢使用!",Toast.LENGTH_SHORT).show();
                                 }else{
                                     try{
                                         if(sceneName.equals("FACTORY")){
@@ -131,7 +187,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                                 }
                             }
                         }
-                       // locationLayer.setCurrentPosition(new PointF(tag2dpos[0],tag2dpos[1]));
                         locationLayer.setCurrentPosition(new PointF(prevX,prevY));
                         mapView.refresh();
                     }
@@ -141,33 +196,13 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             super.handleMessage(msg);
         }
     };
-    //蓝牙service,负责后台的蓝牙服务
-    private static BluetoothLeService mBluetoothLeService;
-    //定位服务
-    private static LocationService mLocationService;
-
-    private MapView mapView;
-    private LocationLayer locationLayer;
-    private MarkLayer markLayer;
-    private RouteLayer routeLayer;
-    private static List<PointF> nodes;
-    private static List<PointF> nodesContract;
-    private static List<PointF> marks;
-    private static List<String> marksName;
-    private boolean needNavigated=false;
-    private static PointF targetP;
-    private boolean openSensor = false; //是否开启传感器
-    private SensorManager sensorManager; //传感器管理层
-
-    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
-    //蓝牙特征值
-    private static BluetoothGattCharacteristic target_chara = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         // TODO Auto-generated method stub
+        DaggerBLEMapComponent.builder().build().inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blemap_test);
 
@@ -197,7 +232,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             }else{
                 bitmap=BitmapFactory.decodeStream(getAssets().open("map.png"));
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -261,9 +295,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                     pointsName.add("test");
                     markLayer=new MarkLayer(mapView,pointList,pointsName);
                 }
-//                locationLayer.setOpenCompass(true);
-//                locationLayer.setCompassIndicatorCircleRotateDegree(0);
-//                locationLayer.setCompassIndicatorArrowRotateDegree(0);
+                locationLayer.setOpenCompass(true);
                 mapView.addLayer(locationLayer);
                 mapView.addLayer(markLayer);
                 mapView.refresh();
@@ -275,6 +307,63 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             }
         });
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        initSearchView();
+    }
+
+    private void initSearchView(){
+        mSearch.setListener(this);
+        mSearchView = (FloatingSearchView) findViewById(R.id.search_location);
+        mSearchView.setAdapter(mAdapter = new BLEMapActivity.SearchAdapter());
+        mSearchView.showLogo(false);
+        mSearchView.setItemAnimator(new BLEMapActivity.CustomSuggestionItemAnimator(mSearchView));
+
+        updateNavigationIcon(R.id.menu_icon_search);
+        mSearchView.showIcon(shouldShowNavigationIcon());//是否转换图标
+
+        mSearchView.setOnIconClickListener(new FloatingSearchView.OnIconClickListener() {
+            @Override
+            public void onNavigationClick() {
+                // toggle
+                mSearchView.setActivated(!mSearchView.isActivated());
+            }
+        });
+
+        mSearchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
+            @Override
+            public void onSearchAction(CharSequence text) {
+                mSearchView.setActivated(false);
+            }
+        });
+//        //菜单点击监听器
+        mSearchView.setOnMenuItemClickListener(this);
+        //搜索文本监听器
+        mSearchView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence query, int start, int before, int count) {
+                showClearButton(query.length() > 0 && mSearchView.isActivated());
+                //如果文本有改变,则启动搜索
+                search(query.toString().trim());
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        mSearchView.setOnSearchFocusChangedListener(new FloatingSearchView.OnSearchFocusChangedListener() {
+            @Override
+            public void onFocusChanged(final boolean focused) {
+                boolean textEmpty = mSearchView.getText().length() == 0;
+                showClearButton(focused && !textEmpty);
+                if(!focused) showProgressBar(false);
+                mSearchView.showLogo(false);
+            }
+        });
+        mSearchView.setText(null);
     }
 
     @Override
@@ -285,7 +374,9 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
         unregisterReceiver(mGattUpdateReceiver);
         mBluetoothLeService = null;
         mLocationService=null;
+        mSearch.cancel();
     }
+
 
     // Activity出来时候，绑定广播接收器，监听蓝牙连接服务传过来的事件
     @Override
@@ -309,7 +400,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
     /* BluetoothLeService绑定的回调函数 */
     private final ServiceConnection mServiceConnection = new ServiceConnection()
     {
-
         @Override
         public void onServiceConnected(ComponentName componentName,
                                        IBinder service)
@@ -321,11 +411,8 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
-            // Automatically connects to the device upon successful start-up
-            // initialization.
             // 根据蓝牙地址，连接设备
             mBluetoothLeService.connect(mDeviceAddress);
-
         }
 
         @Override
@@ -364,8 +451,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                 status = "connected";
                 //更新连接状态
                 updateConnectionState(status);
-               // System.out.println("BroadcastReceiver :" + "device connected");
-
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED//Gatt连接失败
                     .equals(action))
             {
@@ -373,9 +458,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                 status = "disconnected";
                 //更新连接状态
                 updateConnectionState(status);
-             //   System.out.println("BroadcastReceiver :"
-              //          + "device disconnected");
-
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED//发现GATT服务器
                     .equals(action))
             {
@@ -408,7 +490,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                 msg.setData(b);
                 //将连接状态更新的UI的textview上
                 myHandler.sendMessage(msg);
-
             }
         }
     };
@@ -444,10 +525,8 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             pixl_x=(x/1000.0)/(maxx-minx)*canvasWidth+COMPANY_MAP_START_X;
             pixl_y=(y/1000.0)/(maxy-miny)*canvasHeight+COMPANY_MAP_START_Y;
         }
-
         float[] tag2dpos=new float[] {  new Float(pixl_x),new Float(pixl_y)};
         return tag2dpos;
-
     }
 
     /* 更新连接状态 */
@@ -471,7 +550,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
         return intentFilter;
     }
 
-
     /**
      * @Title: displayGattServices
      * @Description: TODO(处理蓝牙服务)
@@ -481,7 +559,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
      */
     private void displayGattServices(List<BluetoothGattService> gattServices)
     {
-
         if (gattServices == null)
             return;
         String uuid = null;
@@ -504,21 +581,14 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             // 获取服务列表
             HashMap<String, String> currentServiceData = new HashMap<String, String>();
             uuid = gattService.getUuid().toString();
-
             // 查表，根据该uuid获取对应的服务名称。SampleGattAttributes这个表需要自定义。
-
             gattServiceData.add(currentServiceData);
-
             System.out.println("Service uuid:" + uuid);
-
             ArrayList<HashMap<String, String>> gattCharacteristicGroupData = new ArrayList<HashMap<String, String>>();
-
             // 从当前循环所指向的服务中读取特征值列表
             List<BluetoothGattCharacteristic> gattCharacteristics = gattService
                     .getCharacteristics();
-
             ArrayList<BluetoothGattCharacteristic> charas = new ArrayList<BluetoothGattCharacteristic>();
-
             // Loops through available Characteristics.
             // 对于当前循环所指向的服务中的每一个特征值
             for (final BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics)
@@ -604,6 +674,267 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    private void search(String query) {
+        showProgressBar(mSearchView.isActivated());
+        mSearch.search(query);
+    }
+
+    private void updateNavigationIcon(int itemId) {
+        Context context = mSearchView.getContext();
+        Drawable drawable = null;
+
+        switch(itemId) {
+            case R.id.menu_icon_search:
+                drawable = new SearchArrowDrawable(context);
+                break;
+            case R.id.menu_icon_drawer:
+                drawable = new android.support.v7.graphics.drawable.DrawerArrowDrawable(context);
+                break;
+            case R.id.menu_icon_custom:
+                drawable = new BLEMapActivity.CustomDrawable(context);
+                break;
+        }
+        drawable = DrawableCompat.wrap(drawable);
+        DrawableCompat.setTint(drawable, ViewUtils.getThemeAttrColor(context, R.attr.colorControlNormal));
+        mSearchView.setIcon(drawable);
+    }
+
+    private boolean shouldShowNavigationIcon() {
+        return mSearchView.getMenu().findItem(R.id.menu_toggle_icon).isChecked();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REQ_CODE_SPEECH_INPUT: {
+                if (resultCode == RESULT_OK && null != data) {
+                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    mSearchView.setActivated(true);
+                    mSearchView.setText(result.get(0));
+                }
+                break;
+            }
+        }
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_clear:
+                mSearchView.setText(null);
+                mSearchView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                break;
+            case R.id.menu_toggle_icon:
+                item.setChecked(!item.isChecked());
+                mSearchView.showIcon(item.isChecked());
+                break;
+            case R.id.menu_tts:
+                PackageUtils.startTextToSpeech(this, getString(R.string.speech_prompt), REQ_CODE_SPEECH_INPUT);
+                break;
+            case R.id.menu_icon_search:
+            case R.id.menu_icon_drawer:
+            case R.id.menu_icon_custom:
+                updateNavigationIcon(item.getItemId());
+                Toast.makeText(BLEMapActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
+                break;
+        }
+        return true;
+    }
+
+    @Override
+    public void onSearchStarted(String query) {
+        //nothing to do
+    }
+
+    @Override
+    public void onSearchResults(SearchResult...searchResults) {
+        mAdapter.setNotifyOnChange(false);
+        mAdapter.clear();
+        if (searchResults != null) mAdapter.addAll(searchResults);
+        mAdapter.setNotifyOnChange(true);
+        mAdapter.notifyDataSetChanged();
+        showProgressBar(false);
+    }
+
+    @Override
+    public void onSearchError(Throwable throwable) {
+        onSearchResults(getErrorResult(throwable));
+    }
+
+    private void onItemClick(SearchResult result) {
+        mSearchView.setActivated(false);
+        if(locationLayer!=null){
+            PointF startPoint=new PointF(prevX,prevY);
+            PointF targetPoint= LocationSet.locationMap.get(result.title);
+            if(targetPoint!=null ){
+                if(Math.sqrt(Math.pow(startPoint.x-targetPoint.x,2)+Math.pow(startPoint.y-targetPoint.y,2))<50){
+                    List<Integer> routeList=new ArrayList<>();
+                    routeLayer.setRouteList(routeList);
+                }else if((sceneName.equals("FACTORY") && !TestData.getFactoryMarksName().contains(result.title))
+                || (sceneName.equals("COMPANY") && !TestData.getCompanyMarksName().contains(result.title))){
+                    mapView.refresh();
+                    Toast.makeText(this,"目前地图不存在该地点,请切换地图再进行查找",Toast.LENGTH_SHORT).show();
+                    return;
+                }else{
+                    try{
+                        if(sceneName.equals("FACTORY")){
+                            nodes=TestData.getFctoryNodesList();
+                            nodesContract=TestData.getFactoryNodesContactList();
+                        }else if(sceneName.equals("COMPANY")){
+                            nodes=TestData.getCompanyNodesList();
+                            nodesContract=TestData.getCompanyNodesContactList();
+                        }
+                        MapUtils.init(nodes.size(),nodesContract.size());
+                        List<Integer> routeList= MapUtils.getShortestDistanceBetweenTwoPoints(startPoint,
+                                targetPoint,nodes,nodesContract);
+                        routeLayer.setNodeList(nodes);
+                        routeLayer.setRouteList(routeList);
+                    }catch(Exception ex){
+                        LogUtil.w(TAG,ex.getMessage());
+                    }
+                }
+            }
+        }
+        locationLayer.setCurrentPosition(new PointF(prevX,prevY));
+        mapView.refresh();
+
+    }
+
+
+    private void showProgressBar(boolean show) {
+        mSearchView.getMenu().findItem(R.id.menu_progress).setVisible(show);
+    }
+
+    private void showClearButton(boolean show) {
+        mSearchView.getMenu().findItem(R.id.menu_clear).setVisible(show);
+    }
+
+    private static SearchResult getErrorResult(Throwable throwable) {
+        return new SearchResult(
+                "<font color='red'>"+
+                        "<b>"+throwable.getClass().getSimpleName()+":</b>"+
+                        "</font> " + throwable.getMessage());
+    }
+
+    private class SearchAdapter extends ArrayRecyclerAdapter<SearchResult, BLEMapActivity.SuggestionViewHolder> {
+
+        private LayoutInflater inflater;
+
+        SearchAdapter() {
+            setHasStableIds(true);
+        }
+
+        @Override
+        public BLEMapActivity.SuggestionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if(inflater == null) inflater = LayoutInflater.from(parent.getContext());
+            return new BLEMapActivity.SuggestionViewHolder(inflater.inflate(R.layout.item_suggestion, parent, false));
+        }
+
+        @Override
+        public void onBindViewHolder(BLEMapActivity.SuggestionViewHolder holder, int position) {
+            holder.bind(getItem(position));
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+    }
+
+    private class SuggestionViewHolder extends RecyclerView.ViewHolder {
+        ImageView left,right;
+        TextView text, url;
+
+        public SuggestionViewHolder(final View itemView) {
+            super(itemView);
+            left = (ImageView) itemView.findViewById(R.id.icon_start);
+            right= (ImageView) itemView.findViewById(R.id.icon_end);
+            text = (TextView) itemView.findViewById(R.id.text);
+            url = (TextView) itemView.findViewById(R.id.url);
+            left.setImageResource(R.drawable.ic_google);
+            itemView.findViewById(R.id.text_container)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onItemClick(mAdapter.getItem(getAdapterPosition()));
+                        }
+                    });
+            right.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mSearchView.setText(text.getText());
+                }
+            });
+        }
+        void bind(SearchResult result) {
+            text.setText(Html.fromHtml(result.title));
+            url.setText(result.visibleUrl);
+            url.setVisibility(result.visibleUrl == null ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    private static class CustomSuggestionItemAnimator extends BaseItemAnimator {
+
+        private final static Interpolator INTERPOLATOR_ADD = new DecelerateInterpolator(3f);
+        private final static Interpolator INTERPOLATOR_REMOVE = new AccelerateInterpolator(3f);
+        private final FloatingSearchView mSearchView;
+
+        public CustomSuggestionItemAnimator(FloatingSearchView searchView) {
+            mSearchView = searchView;
+            setAddDuration(150);
+            setRemoveDuration(150);
+        }
+
+        @Override
+        protected void preAnimateAdd(RecyclerView.ViewHolder holder) {
+            if(!mSearchView.isActivated()) return;
+            ViewCompat.setTranslationX(holder.itemView, 0);
+            ViewCompat.setTranslationY(holder.itemView, -holder.itemView.getHeight());
+            ViewCompat.setAlpha(holder.itemView, 0);
+        }
+
+        @Override
+        protected ViewPropertyAnimatorCompat onAnimateAdd(RecyclerView.ViewHolder holder) {
+            if(!mSearchView.isActivated()) return null;
+            return ViewCompat.animate(holder.itemView)
+                    .translationY(0)
+                    .alpha(1)
+                    .setStartDelay((getAddDuration() / 2) * holder.getLayoutPosition())
+                    .setInterpolator(INTERPOLATOR_ADD);
+        }
+
+        @Override
+        public boolean animateMove(RecyclerView.ViewHolder holder, int fromX, int fromY, int toX, int toY) {
+            dispatchMoveFinished(holder);
+            return false;
+        }
+
+        @Override
+        protected ViewPropertyAnimatorCompat onAnimateRemove(RecyclerView.ViewHolder holder) {
+            return ViewCompat.animate(holder.itemView)
+                    .alpha(0)
+                    .setStartDelay(0)
+                    .setInterpolator(INTERPOLATOR_REMOVE);
+        }
+    }
+
+    private static class CustomDrawable extends ToggleDrawable {
+
+        public CustomDrawable(Context context) {
+            super(context);
+            float radius = ViewUtils.dpToPx(9);
+
+            CrossModel cross = new CrossModel(radius*2);
+            // From circle to cross
+            add(Bezier.quadrant(radius, 0), cross.downLine);
+            add(Bezier.quadrant(radius, 90), cross.upLine);
+            add(Bezier.quadrant(radius, 180), cross.upLine);
+            add(Bezier.quadrant(radius, 270), cross.downLine);
+        }
     }
 
 }

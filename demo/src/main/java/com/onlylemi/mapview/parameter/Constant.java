@@ -1,4 +1,4 @@
-package com.onlylemi.mapview;
+package com.onlylemi.mapview.parameter;
 
 import java.util.HashMap;
 import java.util.Map;

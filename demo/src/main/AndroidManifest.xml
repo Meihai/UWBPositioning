@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
-
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
 
     <application
         android:allowBackup="true"
@@ -18,13 +18,10 @@
         <activity
             android:name=".MainActivity"
             android:theme="@style/AppTheme.Boot">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
         </activity>
 
         <activity
@@ -33,11 +30,13 @@
         </activity>
         <activity
             android:name=".BLEMapActivity"
-            android:label="@string/indoorMapName">
+            android:label="@string/indoorMapName"
+            android:windowSoftInputMode="adjustPan">
         </activity>
         <activity android:name=".BaseConfigActivity"
             android:label="BaseConfigView">
         </activity>
+
 
         <service android:name="com.onlylemi.mapview.service.BluetoothLeService"
             android:enabled="true">
