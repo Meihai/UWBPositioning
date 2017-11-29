@@ -47,8 +47,13 @@ public abstract class AbstractPosEstimation {
         if(baseStationStrList.length<7){
             return null;
         }
-        recvStrBuild.delete(0,recvStrBuild.length());
+        LogUtil.d(TAG,"--------------------------------------------------------");
+        LogUtil.d(TAG,"cost time:"+(System.currentTimeMillis()-prevRecvTime)+"ms");
+        LogUtil.d(TAG,"recvStr="+(recvStrBuild.toString()));
+        LogUtil.d(TAG,"--------------------------------------------------------");
         prevRecvTime=System.currentTimeMillis();
+        recvStrBuild.delete(0,recvStrBuild.length());
+
         prevRecvLastIndex=0;
         //存放每个基站收到的测距数据
         HashMap<String,Integer> distanceCntMap=new HashMap<String,Integer>();
@@ -142,7 +147,7 @@ public abstract class AbstractPosEstimation {
             String key=(String) entry.getKey();
             Double val=(Double) entry.getValue();
             try{
-                if(sceneName.equals("FACTORY")){
+                if(sceneName.equals("Factory")){
                     if(!Constant.factoryBaseStationInfoMap.containsKey(key)){
                         LogUtil.w(TAG,"factoryBaseStationInfoMap does not contain key:"+key);
                         return null;
@@ -150,7 +155,7 @@ public abstract class AbstractPosEstimation {
                     baseStationArr[countbs][0]= Constant.factoryBaseStationInfoMap.get(key)[0];
                     baseStationArr[countbs][1]= Constant.factoryBaseStationInfoMap.get(key)[1];
                     baseStationArr[countbs][2]= Constant.factoryBaseStationInfoMap.get(key)[2];
-                }else if(sceneName.equals("COMPANY")){
+                }else if(sceneName.equals("Company")){
                     if(!Constant.companyBaseStationInfoMap.containsKey(key)){
                         LogUtil.w(TAG,"companyBaseStationInfoMap does not contain key:"+key);
                         return null;
@@ -183,6 +188,13 @@ public abstract class AbstractPosEstimation {
         }
 
     }
+
+//    private static class RecvDataParser(){
+//        private
+//        public RecvDataParser(String recvData){
+//
+//        }
+//    }
 
 
 

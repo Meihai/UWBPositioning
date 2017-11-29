@@ -5,4 +5,12 @@
         <item>Company</item>
     </string-array>
 
+    <string-array name="sping_algorithm_arr">
+        <item>Newton</item>
+        <item>LSQ</item>
+        <item>LM</item>
+        <item>CG</item>
+    </string-array>
+
+
 </resources>

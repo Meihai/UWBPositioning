@@ -45,8 +45,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:rotation="45"
-        android:src="@drawable/ic_arrow_back"
+        android:src="@drawable/ic_route"
         style="@style/Widget.AppCompat.ActionButton"/>
+
 
 </LinearLayout>

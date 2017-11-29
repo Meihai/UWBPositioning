@@ -23,14 +23,20 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.onlylemi.mapview.parameter.Constant;
+import com.onlylemi.mapview.utils.LogUtil;
+
+import static android.view.View.inflate;
 
 /**
  * @Description: TODO<MainActivity类实现打开蓝牙、扫描蓝牙>
@@ -39,9 +45,10 @@ import com.onlylemi.mapview.parameter.Constant;
  * @version: V1.0
  */
 public class MainActivity extends Activity implements OnClickListener {
+    private static final String TAG="MainActivity";
     // 扫描蓝牙按钮
     private Button scan_btn;
-    private Button config_btn;
+    private ImageButton config_btn;
     private Spinner sceneSpin;//室内场景选择
     // 蓝牙适配器
     BluetoothAdapter mBluetoothAdapter;
@@ -59,8 +66,8 @@ public class MainActivity extends Activity implements OnClickListener {
     // 蓝牙扫描时间
     private static final long SCAN_PERIOD = 10000;
     //场景集合
-    public static final String[] sceneArray=new String[]{"FACTORY","COMPANY"};
-    private String selectedScene="FACTORY";
+    public static final String[] sceneArray=new String[]{"Factory","Company"};
+    private String selectedScene="Factory";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -90,14 +97,6 @@ public class MainActivity extends Activity implements OnClickListener {
                         .getDevice(position);
                 if (device == null)
                     return;
-//                final Intent intent = new Intent(MainActivity.this,
-//                        BleActivity.class);
-//                intent.putExtra(BleActivity.EXTRAS_DEVICE_NAME,
-//                        device.getName());
-//                intent.putExtra(BleActivity.EXTRAS_DEVICE_ADDRESS,
-//                        device.getAddress());
-//                intent.putExtra(BleActivity.EXTRAS_DEVICE_RSSI,
-//                        rssis.get(position).toString());
                 final Intent intent = new Intent(MainActivity.this,
                         BLEMapActivity.class);
                 intent.putExtra(BLEMapActivity.EXTRAS_DEVICE_NAME,
@@ -124,6 +123,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
             }
         });
+        scan_btn.performClick();
 
     }
 
@@ -141,17 +141,40 @@ public class MainActivity extends Activity implements OnClickListener {
         lv = (ListView) this.findViewById(R.id.lv);
         mHandler = new Handler();
         sceneSpin=(Spinner) this.findViewById(R.id.scene_spinner);
+        final ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,
+                R.layout.spinner_checked_text,sceneArray){
+            @Override
+            public View getDropDownView(int position,View convertView,ViewGroup parent){
+                View view =inflate(getContext(),R.layout.spinner_item_layout,null);
+                TextView label=(TextView) view.findViewById(R.id.spinner_item_label);
+                ImageView check=(ImageView)view.findViewById(R.id.spinner_item_checked_image);
+                label.setText(sceneArray[position]);
+                if(sceneSpin.getSelectedItemPosition()==position){
+                    label.setTextColor(getResources().getColor(R.color.lightblue));
+                    check.setImageResource(R.drawable.check_icon);
+                }else{
+                    label.setTextColor(getResources().getColor(R.color.spinner_unselected_color));
+                    check.setImageResource(R.drawable.uncheck_icon);
+                    check.setBackgroundColor(getResources().getColor(R.color.transparent));
+                }
+                return view;
+            }
+        };
+        sceneSpin.setAdapter(adapter);
         sceneSpin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> parent,View view,int position,long id){
                   selectedScene=sceneArray[position];
+                  LogUtil.d(TAG,"something selected in spinner "+parent.getAdapter().getCount());
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent){
+                LogUtil.d(TAG,"Nothing selected in spinner "+parent.getAdapter().getCount());
 
             }
         });
-        config_btn=(Button) this.findViewById(R.id.btn_config);
+
+        config_btn=(ImageButton) this.findViewById(R.id.btn_config);
         config_btn.setOnClickListener(new OnClickListener(){
             @Override
             public void onClick(View v){
@@ -229,6 +252,12 @@ public class MainActivity extends Activity implements OnClickListener {
                 Constant.companyBaseStationInfoMap.put(bsName,posArr);
             }
         }
+        //获取算法的参数配置
+        SharedPreferences pref3=getSharedPreferences(Constant.OTHER_DATA_CONFIG_NAME,MODE_PRIVATE);
+        BaseConfigActivity.selectedAlgorithm=pref1.getString("selectedAlgorithm","Newton");
+        BaseConfigActivity.algorithmSelectedIndex=pref1.getInt("algorithmSelectedIndex",0);
+        BaseConfigActivity.algorithmChanged=true;
+
     }
 
     /*
@@ -246,7 +275,7 @@ public class MainActivity extends Activity implements OnClickListener {
         } else
         {
             scanLeDevice(false);
-            scan_btn.setText("扫描设备");
+            scan_btn.setText("扫描定位标签");
         }
     }
 
@@ -276,7 +305,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 {
                     mScanning = false;
                     scan_flag = true;
-                    scan_btn.setText("扫描设备");
+                    scan_btn.setText("扫描定位标签");
                     Log.i("SCAN", "stop.....................");
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
                 }
@@ -392,7 +421,6 @@ public class MainActivity extends Activity implements OnClickListener {
         @Override
         public View getView(int i, View view, ViewGroup viewGroup)
         {
-
             // General ListView optimization code.
             // 加载listview每一项的视图
             view = mInflator.inflate(R.layout.listitem, null);

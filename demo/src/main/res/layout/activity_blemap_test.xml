@@ -16,9 +16,8 @@
         android:paddingLeft="10dp"
         android:background="#90000000"
         android:hint="@string/hint"
-        app:logo="@drawable/logo"
+        app:logo="@drawable/ic_route"
         app:fsv_menu="@menu/search"
-        tools:context="com.onlylemi.mapview.SearchMapActivity"
         app:theme="@style/CustomFloatingSearchViewTheme"/>
 
 </android.support.design.widget.CoordinatorLayout>

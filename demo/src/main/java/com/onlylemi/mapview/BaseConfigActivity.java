@@ -3,13 +3,18 @@ package com.onlylemi.mapview;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import static android.view.View.inflate;
 
 /**
  * Created by admin on 2017/11/4.
@@ -36,7 +43,13 @@ public class BaseConfigActivity extends Activity {
     private EditText bsPosz;
     private Bundle b;
     private ListView bslv;
+    private Spinner algorithmSpin;
     private BsListAdapter mBsListAdapter;
+    //算法集合
+    public static final String[] algorithmArray=new String[]{"Newton","LSQ","LM","CG"};
+    public static String selectedAlgorithm="Newton";
+    public static boolean algorithmChanged=true;
+    public static int algorithmSelectedIndex=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -48,6 +61,54 @@ public class BaseConfigActivity extends Activity {
         sceneName=b.getString(EXTRAS_SCENE_SELECT);
         sceneNameText=(TextView) findViewById(R.id.scene_mode);
         sceneNameText.setText(sceneName);
+        algorithmSpin=(Spinner) findViewById(R.id.algorithm_spinner);
+        ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,
+                R.layout.spinner_checked_text,algorithmArray){
+            @Override
+            public View getDropDownView(int position,View convertView,ViewGroup parent){
+                View view =inflate(getContext(),R.layout.spinner_item_layout,null);
+                TextView label=(TextView) view.findViewById(R.id.spinner_item_label);
+                ImageView check=(ImageView)view.findViewById(R.id.spinner_item_checked_image);
+                label.setText(algorithmArray[position]);
+                if(algorithmSpin.getSelectedItemPosition()==position){
+                    label.setTextColor(getResources().getColor(R.color.lightblue));
+                    check.setImageResource(R.drawable.check_icon);
+                }else{
+                    label.setTextColor(getResources().getColor(R.color.spinner_unselected_color));
+                    check.setImageResource(R.drawable.uncheck_icon);
+                }
+                return view;
+            }
+        };
+        algorithmSpin.setAdapter(adapter);
+        algorithmSpin.setSelection(algorithmSelectedIndex);
+        algorithmSpin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent,View view,int position,long id){
+                if(!algorithmArray[position].equals(selectedAlgorithm)){
+                    selectedAlgorithm=algorithmArray[position];
+                    algorithmChanged=true;
+                    algorithmSelectedIndex=position;
+                    SharedPreferences.Editor editor1=getSharedPreferences(Constant.OTHER_DATA_CONFIG_NAME,MODE_PRIVATE).edit();
+                    editor1.clear();
+                    editor1.commit();
+                    editor1.putString("selectedAlgorithm",selectedAlgorithm);
+                    editor1.putInt("algorithmSelectedIndex",algorithmSelectedIndex);
+                    editor1.commit();
+                }
+                TextView tv=(TextView) view;
+                tv.setTextColor(getResources().getColor(R.color.text_color));
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent){
+
+            }
+        });
+        mBsListAdapter=new BsListAdapter();
+        mBsListAdapter.setSceneMode(sceneName);
+        bslv=(ListView) findViewById(R.id.bslv);
+        bslv.setAdapter(mBsListAdapter);
+        updateBsList();
         bsName=(EditText) findViewById(R.id.edit_bsname);
         bsPosx=(EditText) findViewById(R.id.edit_x);
         bsPosy=(EditText) findViewById(R.id.edit_y);
@@ -61,73 +122,93 @@ public class BaseConfigActivity extends Activity {
                 String bs_posx=bsPosx.getText().toString();
                 String bs_posy=bsPosy.getText().toString();
                 String bs_posz=bsPosz.getText().toString();
-                double[] bsCoord=new double[]{Double.parseDouble(bs_posx),Double.parseDouble(bs_posy),Double.parseDouble(bs_posz)};
-                String showText="";
-                if(sceneName.equals("FACTORY")){
+                if(checkInput(bs_name,bs_posx,bs_posy,bs_posz,"add")){
+                    double[] bsCoord=new double[]{Double.parseDouble(bs_posx),Double.parseDouble(bs_posy),Double.parseDouble(bs_posz)};
+                    String showText="";
+                    if(sceneName.equals("Factory")){
 
-                    if(Constant.factoryBaseStationInfoMap.containsKey(bs_name)){
-                        Constant.factoryBaseStationInfoMap.put(bs_name,bsCoord);
-                        showText="更新工厂基站:"+bs_name+","+bs_posx+","+bs_posy+","+bs_posz+" 成功";
+                        if(Constant.factoryBaseStationInfoMap.containsKey(bs_name)){
+                            Constant.factoryBaseStationInfoMap.put(bs_name,bsCoord);
+                            showText="更新工厂基站:"+bs_name+","+bs_posx+","+bs_posy+","+bs_posz+" 成功";
+                        }else{
+                            Constant.factoryBaseStationInfoMap.put(bs_name,bsCoord);
+                            showText="添加工厂基站:"+bs_name+","+bs_posx+","+bs_posy+","+bs_posz+" 成功";
+                        }
+                        mBsListAdapter.setSceneMode("Factory");
+                    }else if(sceneName.equals("Company")){
+                        if(Constant.companyBaseStationInfoMap.containsKey(bs_name)){
+                            Constant.companyBaseStationInfoMap.put(bs_name,bsCoord);
+                            showText="更新公司基站:"+bs_name+","+bs_posx+","+bs_posy+","+bs_posz+" 成功";
+                        }else{
+                            Constant.companyBaseStationInfoMap.put(bs_name,bsCoord);
+                            showText="添加公司基站:"+bs_name+","+bs_posx+","+bs_posy+","+bs_posz+" 成功";
+                        }
+                        mBsListAdapter.setSceneMode("Company");
                     }else{
-                        Constant.factoryBaseStationInfoMap.put(bs_name,bsCoord);
-                        showText="添加工厂基站:"+bs_name+","+bs_posx+","+bs_posy+","+bs_posz+" 成功";
+                        showText="不支持该模式("+sceneName+")";
                     }
-                    mBsListAdapter.setSceneMode("FACTORY");
-                }else if(sceneName.equals("COMPANY")){
-                    if(Constant.companyBaseStationInfoMap.containsKey(bs_name)){
-                        Constant.companyBaseStationInfoMap.put(bs_name,bsCoord);
-                        showText="更新公司基站:"+bs_name+","+bs_posx+","+bs_posy+","+bs_posz+" 成功";
-                    }else{
-                        Constant.companyBaseStationInfoMap.put(bs_name,bsCoord);
-                        showText="添加公司基站:"+bs_name+","+bs_posx+","+bs_posy+","+bs_posz+" 成功";
-                    }
-                    mBsListAdapter.setSceneMode("COMPANY");
-                }else{
-                    showText="不支持该模式("+sceneName+")";
+                    saveBsPosData();
+                    Toast.makeText(BaseConfigActivity.this,showText,Toast.LENGTH_SHORT).show();
                 }
                 updateBsList();
-                saveBsPosData();
-                Toast.makeText(BaseConfigActivity.this,showText,Toast.LENGTH_SHORT).show();
+
             }
         });
         delBsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String bs_name=bsName.getText().toString();
-                String showText="";
-                if(sceneName.equals("FACTORY")){
-                    if(Constant.factoryBaseStationInfoMap.containsKey(bs_name)){
-                        Constant.factoryBaseStationInfoMap.remove(bs_name);
-                        mBsListAdapter.setSceneMode("FACTORY");
-                        showText="删除工厂基站:"+bs_name+" 成功";
-                    }else{
-                        showText="不存在工厂基站:"+bs_name+",删除失败";
+                if(checkInput(bs_name,null,null,null,"delete")){
+                    String showText="";
+                    if(sceneName.equals("Factory")){
+                        if(Constant.factoryBaseStationInfoMap.containsKey(bs_name)){
+                            Constant.factoryBaseStationInfoMap.remove(bs_name);
+                            mBsListAdapter.setSceneMode("Factory");
+                            showText="删除工厂基站:"+bs_name+" 成功";
+                        }else{
+                            showText="不存在工厂基站:"+bs_name+",删除失败";
+                        }
+                    }if(sceneName.equals("Company")){
+                        if(Constant.companyBaseStationInfoMap.containsKey(bs_name)){
+                            Constant.companyBaseStationInfoMap.remove(bs_name);
+                            showText="删除公司基站:"+bs_name+" 成功";
+                            mBsListAdapter.setSceneMode("Company");
+                        }else{
+                            showText="不存在公司基站:"+bs_name+",删除失败";
+                        }
                     }
-                }if(sceneName.equals("COMPANY")){
-                    if(Constant.companyBaseStationInfoMap.containsKey(bs_name)){
-                        Constant.companyBaseStationInfoMap.remove(bs_name);
-                        showText="删除公司基站:"+bs_name+" 成功";
-                        mBsListAdapter.setSceneMode("COMPANY");
-                    }else{
-                        showText="不存在公司基站:"+bs_name+",删除失败";
-                    }
+                    saveBsPosData();
+                    Toast.makeText(BaseConfigActivity.this,showText,Toast.LENGTH_SHORT).show();
                 }
                 updateBsList();
-                saveBsPosData();
-                Toast.makeText(BaseConfigActivity.this,showText,Toast.LENGTH_SHORT).show();
             }
         });
-        mBsListAdapter=new BsListAdapter();
-        mBsListAdapter.setSceneMode(sceneName);
-        bslv=(ListView) findViewById(R.id.bslv);
-        bslv.setAdapter(mBsListAdapter);
-        updateBsList();
+    }
 
+    private boolean checkInput(String bs_name,String bs_posx,String bs_posy,String bs_posz,String context){
+        if(bs_name==null || TextUtils.isEmpty(bs_name)){
+            Toast.makeText(BaseConfigActivity.this,"基站名称输入不能为空",Toast.LENGTH_SHORT).show();
+            return false;
+        }else if(context.equals("add")){
+           if(bs_posx==null || TextUtils.isEmpty(bs_posx)){
+               Toast.makeText(BaseConfigActivity.this,"基站X坐标输入不能为空",Toast.LENGTH_SHORT).show();
+               return false;
+           }
+           if(bs_posy==null || TextUtils.isEmpty(bs_posy)){
+               Toast.makeText(BaseConfigActivity.this,"基站Y坐标输入不能为空",Toast.LENGTH_SHORT).show();
+               return false;
+           }
+           if(bs_posz==null || TextUtils.isEmpty(bs_posz)){
+               Toast.makeText(BaseConfigActivity.this,"基站Z坐标输入不能为空",Toast.LENGTH_SHORT).show();
+               return false;
+           }
+        }
+        return true;
     }
 
     private void updateBsList(){
         ArrayList<BaseStation> baseStations=new ArrayList<BaseStation>();
-        if(mBsListAdapter.getSceneMode().equals("FACTORY")){
+        if(mBsListAdapter.getSceneMode().equals("Factory")){
             Set bsSet=Constant.factoryBaseStationInfoMap.entrySet();
             Iterator iterator=bsSet.iterator();
             while(iterator.hasNext()){
@@ -137,8 +218,7 @@ public class BaseConfigActivity extends Activity {
                 BaseStation insBaseStation=new BaseStation(bsName,bsCoord);
                 baseStations.add(insBaseStation);
             }
-
-        }else if(mBsListAdapter.getSceneMode().equals("COMPANY")){
+        }else if(mBsListAdapter.getSceneMode().equals("Company")){
             Set bsSet=Constant.companyBaseStationInfoMap.entrySet();
             Iterator iterator=bsSet.iterator();
             while(iterator.hasNext()){
@@ -197,7 +277,7 @@ public class BaseConfigActivity extends Activity {
             super();
             mBsStations=new ArrayList<BaseStation>();
             mInflator = getLayoutInflater();
-            sceneMode="FACTORY";
+            sceneMode="Factory";
         }
 
         public void setSceneMode(String sceneMode){

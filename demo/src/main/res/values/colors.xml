@@ -19,6 +19,12 @@
     <color name="gray_yellow">#ffcd0e</color>
     <color name="text_gray">#ABABAB</color>
 
+    <color name="lightblue">#97cff3</color>
+    <color name="text_color">#333333</color>
+    <color name="text_color1">#666666</color>
+    <color name="list_bg_color">#e2e2e2</color>
+    <color name="spinner_unselected_color">#999999</color>
+
     <color name="listview_line">#ABABAB</color>
     <color name="lightgray">#3f484b</color>
 

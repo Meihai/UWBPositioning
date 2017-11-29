@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import com.onlylemi.mapview.BaseConfigActivity;
 import com.onlylemi.mapview.utils.LogUtil;
 
 /**
@@ -14,10 +15,11 @@ import com.onlylemi.mapview.utils.LogUtil;
 public class LocationService extends Service{
     private static final String TAG="LocationService";
     private final IBinder mBinder=new LocalBinder();
-    private static  LocationI mlocationCal=new PosEstimationWithLM();//new PosEstimationWithNewton();//new PosEstimationWithCG();
+    private static  LocationI mlocationCal=new PosEstimationWithLM();//new PosEstimationWithNewton();//new PosEstimationWithCG();new PosEstimationWithLM();//
     public static final String ACTION_POSITION_AVAILABLE="com.keydak.uwb.ACTION_POSITION_AVAILABLE";
     public static final String ACTION_POSITION_CALC_FAIL="com.keydak.uwb.ACTION_POSITION_CALC_FAIL";
     public static final String EXTRA_DATA="com.keydak.uwb.EXTRA_DATA";
+
     @Override
     public IBinder onBind(Intent intent){
         LogUtil.d(TAG,"onBind() executed!");
@@ -50,6 +52,18 @@ public class LocationService extends Service{
 
     public void calcPosition(String baseStationInfo,String sceneName){
         LogUtil.w(TAG,"baseStationInfo="+baseStationInfo);
+        if(BaseConfigActivity.algorithmChanged){
+            if(BaseConfigActivity.selectedAlgorithm.equals("Newton")){
+                mlocationCal=new PosEstimationWithNewton();
+            }else if(BaseConfigActivity.selectedAlgorithm.equals("LM")){
+                mlocationCal=new PosEstimationWithLM();
+            }else if(BaseConfigActivity.selectedAlgorithm.equals("LSQ")){
+                mlocationCal=new PosEstimationWithLSQ();
+            }else{
+                mlocationCal=new PosEstimationWithCG();
+            }
+            BaseConfigActivity.algorithmChanged=false;
+        }
         double[] positionArr=mlocationCal.convertDistanceToPos(baseStationInfo,sceneName);
         if(positionArr==null){
             broadcastUpdate(ACTION_POSITION_CALC_FAIL,"Calculte with "+TAG);

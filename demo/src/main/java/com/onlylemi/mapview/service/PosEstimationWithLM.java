@@ -5,6 +5,7 @@ import com.onlylemi.mapview.agorithm.trilateration.NonLinearLeastSquaresSolver;
 import com.onlylemi.mapview.agorithm.trilateration.TrilaterationFunction;
 import com.onlylemi.mapview.utils.LogUtil;
 
+import org.apache.commons.math3.fitting.leastsquares.GaussNewtonOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 
@@ -39,6 +40,7 @@ public class PosEstimationWithLM extends AbstractPosEstimation implements Locati
 
         NonLinearLeastSquaresSolver solver=new NonLinearLeastSquaresSolver(new TrilaterationFunction(positions,distances),
                     new LevenbergMarquardtOptimizer());
+
         LeastSquaresOptimizer.Optimum optimum=solver.solve();
 
         double[] result=optimum.getPoint().toArray();

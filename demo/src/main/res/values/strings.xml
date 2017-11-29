@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">室内导航</string>
+    <string name="app_name">室内定位</string>
     <string name="indoorMapName">工厂机房地图导航</string>
     <array name="maplayer_name">
         <item>MapLayerTest</item>
@@ -14,7 +14,8 @@
     <string name="speech_not_supported">speech to text doesn\'t seems supported</string>
     <string name="menu.clear">clear</string>
     <string name="menu.tts">text to speech</string>
-    <string name="menu.toggle.icon">Icon Visible</string>
+    <string name="menu.toggle.icon">图标可见</string>
     <string name="menu.icon.type">Icon Type</string>
+    <string name="menu.navigation">取消导航</string>
 
 </resources>

@@ -11,40 +11,61 @@ import java.util.HashMap;
 public class LocationSet {
     public static HashMap<String,PointF> locationMap=new HashMap();
     static{
-        //工厂相关位置标记点
-        //A通道左边标记点
-        locationMap.put("AL1",new PointF(50, 122));
-        locationMap.put("AL2",new PointF(50,160));
-        locationMap.put("AL3",new PointF(50,198));
-        //A通道中间过道标记点
-        locationMap.put("AP1",new PointF(81,122));
-        locationMap.put("AP2",new PointF(81,160));
-        locationMap.put("AP3",new PointF(81,198));
-        //A通道右边标记点
-        locationMap.put("AR1",new PointF(110,122));
-        locationMap.put("AR2",new PointF(110,160));
-        locationMap.put("AR3",new PointF(110,198));
 
-        //过道标记点
-        locationMap.put("P1",new PointF(50,238));
-        locationMap.put("P2",new PointF(81,238));
-        locationMap.put("P3",new PointF(110,238));
 
-        //B 通道左边标记点
-        locationMap.put("BL1",new PointF(50,270));
-        locationMap.put("BL2",new PointF(50,308));
-        locationMap.put("BL3",new PointF(50,346));
-        locationMap.put("BL4",new PointF(50,384));
-        //B通道中间过道标记点
-        locationMap.put("BP1",new PointF(81,270));
-        locationMap.put("BP2",new PointF(81,308));
-        locationMap.put("BP3",new PointF(81,346));
-        locationMap.put("BP4",new PointF(81,384));
+
+        locationMap.put("AL1",new PointF(151,295));//A通道左边标记点
+        locationMap.put("AL2",new PointF(151,339));
+        locationMap.put("AL3",new PointF(151,378));
+        locationMap.put("A通道列间空调1",new PointF(151,423));//
+        locationMap.put("AL5",new PointF(151,467));
+        locationMap.put("AL6",new PointF(151,511));
+        locationMap.put("A通道综合机柜1",new PointF(151,547));
+
+        locationMap.put("电源列柜",new PointF(379,295));//A通道右边标记点
+        locationMap.put("蓄电池柜",new PointF(379,339));
+        locationMap.put("AR3",new PointF(379,378));
+        locationMap.put("A通道列间空调2",new PointF(379,423));
+        locationMap.put("AR5",new PointF(379,467));
+        locationMap.put("AR6",new PointF(379,511));
+        locationMap.put("A通道综合机柜2",new PointF(379,547));
+
+
+
+
+        //B通道左边标记点
+        locationMap.put("BL1",new PointF(151,655));
+        locationMap.put("BL2",new PointF(151,696));
+        locationMap.put("BL3",new PointF(151,737));
+        locationMap.put("B通道列间空调1",new PointF(151,781));
+        locationMap.put("BL5",new PointF(151,824));
+        locationMap.put("BL6",new PointF(151,871));
+        locationMap.put("BL7",new PointF(151,910));
+        locationMap.put("B通道列间空调2",new PointF(151,953));
+        locationMap.put("BL9",new PointF(151,996));
+        locationMap.put("BL10",new PointF(151,1038));
+        locationMap.put("BL11",new PointF(151,1080));
+
         //B通道右边标记点
-        locationMap.put("BR1",new PointF(110,270));
-        locationMap.put("BR2",new PointF(110,308));
-        locationMap.put("BR3",new PointF(110,346));
-        locationMap.put("BR4",new PointF(110,384));
+        locationMap.put("BR1",new PointF(379,655));
+        locationMap.put("BR2",new PointF(379,696));
+        locationMap.put("BR3",new PointF(379,737));
+        locationMap.put("B通道列间空调3",new PointF(379,781));
+        locationMap.put("BR5",new PointF(379,824));
+        locationMap.put("BR6",new PointF(379,871));
+        locationMap.put("BR7",new PointF(379,910));
+        locationMap.put("B通道列间空调4",new PointF(379,953));
+        locationMap.put("BR9",new PointF(379,996));
+        locationMap.put("BR10",new PointF(379,1038));
+        locationMap.put("BR11",new PointF(379,1080));
+
+        //公司标记点
+        locationMap.put("CD500",new PointF(668,602));
+        locationMap.put("ISR柜1",new PointF(752,602));
+        locationMap.put("ISR柜2",new PointF(841,602));
+        locationMap.put("ISR柜3",new PointF(933,602));
+        locationMap.put("ISR柜4",new PointF(1023,602));
+        locationMap.put("综合布线机柜",new PointF(1110,602));
         
     }
 }

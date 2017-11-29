@@ -39,6 +39,7 @@ public class LocationLayer extends MapBaseLayer {
     private float compassIndicatorArrowRotateDegree;
     private float compassIndicatorCircleRotateDegree = 0;
     private Bitmap compassIndicatorArrowBitmap;
+    private Bitmap compassIndicator;
 
     private BitmapLayer compassBitmapLayer;
 
@@ -85,7 +86,7 @@ public class LocationLayer extends MapBaseLayer {
         compassIndicatorCircleRadius = setValue(2.6f);
         compassIndicatorGap = setValue(15.0f);
 
-        // default compassLinePaint
+        // default compassLinePaint 不需要外围圆
         compassLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         compassLinePaint.setAntiAlias(true);
         compassLinePaint.setStrokeWidth(compassLineWidth);
@@ -95,15 +96,17 @@ public class LocationLayer extends MapBaseLayer {
         indicatorCirclePaint.setStyle(Paint.Style.FILL);
         indicatorCirclePaint.setShadowLayer(3, 1, 1, DEFAULT_LOCATION_SHADOW_COLOR);
         indicatorCirclePaint.setColor(DEFAULT_INDICATOR_CIRCLE_COLOR);
-        // default indicatorArcPaint
+        // default indicatorArcPaint 不需要弧度
         indicatorArcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         indicatorArcPaint.setStyle(Paint.Style.STROKE);
         indicatorArcPaint.setColor(DEFAULT_INDICATOR_ARC_COLOR);
         indicatorArcPaint.setStrokeWidth(compassArcWidth);
 
-//        compassIndicatorArrowBitmap = BitmapFactory.decodeResource(mapView.getResources(),
-//                R.mipmap.compass);
+        compassIndicatorArrowBitmap = BitmapFactory.decodeResource(mapView.getResources(),
+                R.mipmap.compass);
 //        compassBitmapLayer = new BitmapLayer(mapView, compassIndicatorArrowBitmap, null);
+        compassIndicator=BitmapFactory.decodeResource(mapView.getResources(),R.mipmap.indicator);
+
         //不需要箭头
         compassBitmapLayer = new BitmapLayer(mapView, null, null);
     }
@@ -120,71 +123,73 @@ public class LocationLayer extends MapBaseLayer {
             canvas.save();
             float[] goal = {currentPosition.x, currentPosition.y};
             currentMatrix.mapPoints(goal);
+            canvas.drawBitmap(compassIndicator, goal[0]
+                            - compassIndicator.getWidth() / 2,
+                    goal[1] - compassIndicator.getWidth() / 2, new Paint());
+//            canvas.drawCircle(goal[0], goal[1], defaultLocationCircleRadius,
+//                    locationPaint);
+//
+//            canvas.drawCircle(goal[0], goal[1], defaultLocationCircleRadius,
+//                    locationPaint);
 
-            canvas.drawCircle(goal[0], goal[1], defaultLocationCircleRadius,
-                    locationPaint);
-
-            canvas.drawCircle(goal[0], goal[1], defaultLocationCircleRadius,
-                    locationPaint);
-
-            if (openCompass) {
-                for (int i = 0; i < 360 / COMPASS_DELTA_ANGLE; i++) {
-                    canvas.save();
-                    canvas.rotate(COMPASS_DELTA_ANGLE * i, goal[0], goal[1]);
-                    if (i % (90 / COMPASS_DELTA_ANGLE) == 0) {
-                        canvas.drawLine(goal[0], goal[1] - compassRadius
-                                + compassLocationCircleRadius, goal[0], goal[1]
-                                - compassRadius + compassLocationCircleRadius
-                                - compassLineLength, compassLinePaint);
-                    } else {
-                        canvas.drawCircle(goal[0], goal[1] - compassRadius,
-                                compassLocationCircleRadius, new Paint());
-                    }
-                    canvas.restore();
-                }
-                if (compassIndicatorArrowBitmap != null) {
-                    canvas.save();
-                    canvas.rotate(this.compassIndicatorArrowRotateDegree,
-                            goal[0], goal[1]);
-                    canvas.drawBitmap(compassIndicatorArrowBitmap, goal[0]
-                                    - compassIndicatorArrowBitmap.getWidth() / 2,
-                            goal[1] - defaultLocationCircleRadius
-                                    - compassIndicatorGap, new Paint());
-//                    compassBitmapLayer.setLocation(currentPosition);
-//                    compassBitmapLayer.draw(canvas, currentMatrix, currentZoom,
-//                            currentRotateDegrees);
-                    canvas.restore();
-                    if (360 - (this.compassIndicatorArrowRotateDegree - this
-                            .compassIndicatorCircleRotateDegree) > 180) {
-                        canvas.drawArc(
-                                new RectF(goal[0] - compassRadius, goal[1]
-                                        - compassRadius, goal[0]
-                                        + compassRadius, goal[1]
-                                        + compassRadius),
-                                -90 + this.compassIndicatorCircleRotateDegree,
-                                (this.compassIndicatorArrowRotateDegree - this
-                                        .compassIndicatorCircleRotateDegree),
-                                false, indicatorArcPaint);
-                    } else {
-                        canvas.drawArc(
-                                new RectF(goal[0] - compassRadius, goal[1]
-                                        - compassRadius, goal[0]
-                                        + compassRadius, goal[1]
-                                        + compassRadius),
-                                -90 + this.compassIndicatorArrowRotateDegree,
-                                360 - (this.compassIndicatorArrowRotateDegree - this
-                                        .compassIndicatorCircleRotateDegree),
-                                false, indicatorArcPaint);
-                    }
-
-                }
-                canvas.save();
-                canvas.rotate(compassIndicatorCircleRotateDegree, goal[0],
-                        goal[1]);
-                canvas.drawCircle(goal[0], goal[1] - compassRadius,
-                        compassIndicatorCircleRadius, indicatorCirclePaint);
-                canvas.restore();
-            }
+//            if (openCompass) {
+//                for (int i = 0; i < 360 / COMPASS_DELTA_ANGLE; i++) {
+//                    canvas.save();
+//                    canvas.rotate(COMPASS_DELTA_ANGLE * i, goal[0], goal[1]);
+//                    if (i % (90 / COMPASS_DELTA_ANGLE) == 0) {
+//                        canvas.drawLine(goal[0], goal[1] - compassRadius
+//                                + compassLocationCircleRadius, goal[0], goal[1]
+//                                - compassRadius + compassLocationCircleRadius
+//                                - compassLineLength, compassLinePaint);
+//                    } else {
+//                        canvas.drawCircle(goal[0], goal[1] - compassRadius,
+//                                compassLocationCircleRadius, new Paint());
+//                    }
+//                    canvas.restore();
+//                }
+//                if (compassIndicatorArrowBitmap != null) {
+//                    canvas.save();
+//                    canvas.rotate(this.compassIndicatorArrowRotateDegree,
+//                            goal[0], goal[1]);
+//                    canvas.drawBitmap(compassIndicatorArrowBitmap, goal[0]
+//                                    - compassIndicatorArrowBitmap.getWidth() / 2,
+//                            goal[1] - defaultLocationCircleRadius
+//                                    - compassIndicatorGap, new Paint());
+////                    compassBitmapLayer.setLocation(currentPosition);
+////                    compassBitmapLayer.draw(canvas, currentMatrix, currentZoom,
+////                            currentRotateDegrees);
+//                    canvas.restore();
+//                    if (360 - (this.compassIndicatorArrowRotateDegree - this
+//                            .compassIndicatorCircleRotateDegree) > 180) {
+//                        canvas.drawArc(
+//                                new RectF(goal[0] - compassRadius, goal[1]
+//                                        - compassRadius, goal[0]
+//                                        + compassRadius, goal[1]
+//                                        + compassRadius),
+//                                -90 + this.compassIndicatorCircleRotateDegree,
+//                                (this.compassIndicatorArrowRotateDegree - this
+//                                        .compassIndicatorCircleRotateDegree),
+//                                false, indicatorArcPaint);
+//                    } else {
+//                        canvas.drawArc(
+//                                new RectF(goal[0] - compassRadius, goal[1]
+//                                        - compassRadius, goal[0]
+//                                        + compassRadius, goal[1]
+//                                        + compassRadius),
+//                                -90 + this.compassIndicatorArrowRotateDegree,
+//                                360 - (this.compassIndicatorArrowRotateDegree - this
+//                                        .compassIndicatorCircleRotateDegree),
+//                                false, indicatorArcPaint);
+//                    }
+//
+//                }
+//                canvas.save();
+//                canvas.rotate(compassIndicatorCircleRotateDegree, goal[0],
+//                        goal[1]);
+//                canvas.drawCircle(goal[0], goal[1] - compassRadius,
+//                        compassIndicatorCircleRadius, indicatorCirclePaint);
+//                canvas.restore();
+//            }
             canvas.restore();
         }
     }

@@ -48,7 +48,7 @@ public class MarkLayer extends MapBaseLayer {
     private void initLayer() {
         radiusMark = setValue(10f); //超市的半径
 
-        bmpMark = BitmapFactory.decodeResource(mapView.getResources(), R.mipmap.mark);
+        bmpMark = BitmapFactory.decodeResource(mapView.getResources(), R.mipmap.ic_location);
         bmpMarkTouch = BitmapFactory.decodeResource(mapView.getResources(), R.mipmap.mark_touch);
 
         paint = new Paint();
@@ -83,6 +83,7 @@ public class MarkLayer extends MapBaseLayer {
         }
     }
 
+
     @Override
     public void draw(Canvas canvas, Matrix currentMatrix, float currentZoom, float
             currentRotateDegrees) {
@@ -105,10 +106,12 @@ public class MarkLayer extends MapBaseLayer {
                     //mark ico
                     canvas.drawBitmap(bmpMark, goal[0] - bmpMark.getWidth() / 2,
                             goal[1] - bmpMark.getHeight() / 2, paint);
+                   // System.out.println("MarkLayer i="+i+",num="+num);
                     if (i == num && isClickMark) {
                         canvas.drawBitmap(bmpMarkTouch, goal[0] - bmpMarkTouch.getWidth() / 2,
                                 goal[1] - bmpMarkTouch.getHeight(), paint);
                     }
+
                 }
             }
             canvas.restore();
@@ -143,8 +146,16 @@ public class MarkLayer extends MapBaseLayer {
         return isClickMark;
     }
 
+    public void setIsClickMark(boolean isClickMark){
+        this.isClickMark=isClickMark;
+    }
+
     public void setMarkIsClickListener(MarkIsClickListener listener) {
         this.listener = listener;
+    }
+
+    public MarkIsClickListener getMarkIsClickListener(){
+        return this.listener;
     }
 
     public interface MarkIsClickListener {

@@ -49,8 +49,18 @@ public class PosEstimationWithNewton extends AbstractPosEstimation implements Lo
           /*将数组封装成矩阵*/
         Matrix b1=new Matrix(bM);
         Matrix a1=new Matrix(aM);
-        Matrix tagm=a1.solve(b1);
-        double[] tag=tagm.getRowPackedCopy();
+        double[] tag=new double[3];
+        System.out.println("a1*********b1*************************");
+        b1.print(5,2);
+        a1.print(5,2);
+        try{
+            Matrix tagm=a1.solve(b1);
+            tag=tagm.getRowPackedCopy();
+        }catch(Exception ex){
+
+            ex.printStackTrace();
+        }
+
         return tag;
     }
 }

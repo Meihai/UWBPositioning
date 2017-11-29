@@ -50,5 +50,11 @@
         <item name="android:textColor">?android:attr/textColorSecondary</item>
     </style>
 
+    <!-- 修改spinner 右边下拉箭头颜色值-->
+    <style name="spinnerStyle">
+        <item name="colorAccent">#888888</item>
+        <item name="colorControlNormal">#97cff3</item>
+    </style>
+
 
 </resources>

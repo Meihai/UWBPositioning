@@ -13,6 +13,9 @@ public class Constant {
     public static final int BASE_STATION_DOWN_LIMIT=4;
     public static final String FACTORY_BS_DATA_NAME="factory_bs_data";
     public static final String COMPANY_BS_DATA_NAME="company_bs_data";
+    public static final String OTHER_DATA_CONFIG_NAME="config_data";
+
+
     public static Map<String,double[]> factoryBaseStationInfoMap=new HashMap<String,double[]>();
     public static Map<String,double[]> companyBaseStationInfoMap=new HashMap<String,double[]>();
     static{
