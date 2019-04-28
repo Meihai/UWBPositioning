@@ -10,6 +10,10 @@ import com.onlylemi.mapview.utils.LogUtil;
 
 public class PosEstimationWithLSQ extends AbstractPosEstimation implements LocationI{
     private static final String TAG="PosEstimationWithLSQ";
+    //写文件
+    private static String fileName="uwbLSQDistance.txt";
+    private static String filePath="/sdcard/indoorLocation/";
+
     @Override
     public double[]  convertDistanceToPos(String baseStationInfo,String sceneName){
         LogUtil.i(TAG,baseStationInfo);
@@ -24,6 +28,7 @@ public class PosEstimationWithLSQ extends AbstractPosEstimation implements Locat
     private double[] estimateTagPos(double[][] baseStationInfo){
         double[][] positions=new double[baseStationInfo.length][3];
         double[] distances=new double[baseStationInfo.length];
+        writeUwbDataToFile(filePath,fileName,baseStationInfo);
         //对位置和距离赋值
         for(int i=0;i<baseStationInfo.length;i++){
             positions[i][0]=baseStationInfo[i][0];

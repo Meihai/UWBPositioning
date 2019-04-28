@@ -11,19 +11,24 @@ import Jama.Matrix;
  */
 
 public class PosEstimationWithNewton extends AbstractPosEstimation implements LocationI {
-    private static final String TAG="PostEstimationWithNewton";
+    private static final String TAG="PosEstimationWithNewton";
+    //写文件
+    private static String fileName="uwbNewtonDistance.txt";
+    private static String filePath="/sdcard/indoorLocation/";
+
     @Override
     public double[]  convertDistanceToPos(String baseStationInfo,String sceneName){
         LogUtil.i(TAG,baseStationInfo);
         double[][] bsInfoArr=parseDistanceStr(baseStationInfo, Constant.NO_ERROR_CORRECTED, Constant.BASE_STATION_DOWN_LIMIT,sceneName);
         if(bsInfoArr==null){
-            LogUtil.w(TAG,"bsInfoArr is null,can not calculate tag position!");
+           // LogUtil.w(TAG,"bsInfoArr is null,can not calculate tag position!");
             return null;
         }
         return estimateTagPos(bsInfoArr);
     }
 
     private double[] estimateTagPos(double[][] baseStationInfo){
+        writeUwbDataToFile(filePath,fileName,baseStationInfo);
         double[] originalx=calcWithLeastSquare(baseStationInfo);
         MultivariateNewton mNewton=new MultivariateNewton(originalx,1e-5,100,baseStationInfo);
         double[] result=mNewton.getNewtonMin();
@@ -57,7 +62,6 @@ public class PosEstimationWithNewton extends AbstractPosEstimation implements Lo
             Matrix tagm=a1.solve(b1);
             tag=tagm.getRowPackedCopy();
         }catch(Exception ex){
-
             ex.printStackTrace();
         }
 

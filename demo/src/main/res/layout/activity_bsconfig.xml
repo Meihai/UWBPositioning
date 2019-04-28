@@ -88,7 +88,7 @@
         android:layout_marginRight="20dip"
         android:layout_marginTop="5dip"
         android:layout_marginBottom="5dip"
-        android:gravity="center_horizontal"
+        android:gravity="left"
         android:layout_below="@+id/linearLayout"
         android:layout_centerHorizontal="true">
 

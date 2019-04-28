@@ -50,7 +50,7 @@ public class LocationService extends Service{
         super.onDestroy();
     }
 
-    public void calcPosition(String baseStationInfo,String sceneName){
+    public void  calcPosition(String baseStationInfo,String sceneName){
         LogUtil.w(TAG,"baseStationInfo="+baseStationInfo);
         if(BaseConfigActivity.algorithmChanged){
             if(BaseConfigActivity.selectedAlgorithm.equals("Newton")){
@@ -67,9 +67,10 @@ public class LocationService extends Service{
         double[] positionArr=mlocationCal.convertDistanceToPos(baseStationInfo,sceneName);
         if(positionArr==null){
             broadcastUpdate(ACTION_POSITION_CALC_FAIL,"Calculte with "+TAG);
-            LogUtil.w(TAG,"calculate position failed");
+           // LogUtil.w(TAG,"在时间"+System.currentTimeMillis()+",calculate position failed");
             return;
         }
+        LogUtil.i(TAG,"在时间"+System.currentTimeMillis()+",获得坐标:"+positionArr[0]+","+positionArr[1]+","+positionArr[2]);
         //计算完毕发送一个广播
         broadcastUpdate(ACTION_POSITION_AVAILABLE,positionArr);
     }

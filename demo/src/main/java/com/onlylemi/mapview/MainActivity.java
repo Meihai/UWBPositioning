@@ -67,7 +67,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private static final long SCAN_PERIOD = 10000;
     //场景集合
     public static final String[] sceneArray=new String[]{"Factory","Company"};
-    private String selectedScene="Factory";
+    private String selectedScene="Company";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -97,15 +97,29 @@ public class MainActivity extends Activity implements OnClickListener {
                         .getDevice(position);
                 if (device == null)
                     return;
+//                final Intent intent = new Intent(MainActivity.this,
+//                        BLEMapActivity.class);
+//                intent.putExtra(BLEMapActivity.EXTRAS_DEVICE_NAME,
+//                        device.getName());
+//                intent.putExtra(BLEMapActivity.EXTRAS_DEVICE_ADDRESS,
+//                        device.getAddress());
+//                intent.putExtra(BLEMapActivity.EXTRAS_DEVICE_RSSI,
+//                        rssis.get(position).toString());
+//                intent.putExtra(BLEMapActivity.EXTRA_SCENE_SELECT,selectedScene);
+//
+//                final Intent intent = new Intent(MainActivity.this,
+//                    PdrMapActivity.class);
+//                intent.putExtra(PdrMapActivity.EXTRA_SCENE_SELECT,selectedScene);
+
                 final Intent intent = new Intent(MainActivity.this,
-                        BLEMapActivity.class);
-                intent.putExtra(BLEMapActivity.EXTRAS_DEVICE_NAME,
+                        HybridMapActivity.class);
+                intent.putExtra(HybridMapActivity.EXTRAS_DEVICE_NAME,
                         device.getName());
-                intent.putExtra(BLEMapActivity.EXTRAS_DEVICE_ADDRESS,
+                intent.putExtra(HybridMapActivity.EXTRAS_DEVICE_ADDRESS,
                         device.getAddress());
-                intent.putExtra(BLEMapActivity.EXTRAS_DEVICE_RSSI,
+                intent.putExtra(HybridMapActivity.EXTRAS_DEVICE_RSSI,
                         rssis.get(position).toString());
-                intent.putExtra(BLEMapActivity.EXTRA_SCENE_SELECT,selectedScene);
+                intent.putExtra(HybridMapActivity.EXTRA_SCENE_SELECT,selectedScene);
                 if (mScanning)
                 {
 					/* 停止扫描设备 */
@@ -254,8 +268,8 @@ public class MainActivity extends Activity implements OnClickListener {
         }
         //获取算法的参数配置
         SharedPreferences pref3=getSharedPreferences(Constant.OTHER_DATA_CONFIG_NAME,MODE_PRIVATE);
-        BaseConfigActivity.selectedAlgorithm=pref1.getString("selectedAlgorithm","Newton");
-        BaseConfigActivity.algorithmSelectedIndex=pref1.getInt("algorithmSelectedIndex",0);
+        BaseConfigActivity.selectedAlgorithm=pref3.getString("selectedAlgorithm","LM");
+        BaseConfigActivity.algorithmSelectedIndex=pref3.getInt("algorithmSelectedIndex",2);
         BaseConfigActivity.algorithmChanged=true;
 
     }

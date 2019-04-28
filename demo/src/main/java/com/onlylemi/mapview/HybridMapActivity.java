@@ -1,4 +1,5 @@
 package com.onlylemi.mapview;
+
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
@@ -12,9 +13,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,7 +20,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.speech.RecognizerIntent;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -36,7 +33,6 @@ import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
@@ -47,12 +43,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mypopsy.drawable.SearchArrowDrawable;
-import com.mypopsy.drawable.ToggleDrawable;
-import com.mypopsy.drawable.model.CrossModel;
-import com.mypopsy.drawable.util.Bezier;
 import com.mypopsy.widget.FloatingSearchView;
 import com.onlylemi.mapview.adapter.ArrayRecyclerAdapter;
-import com.onlylemi.mapview.dagger.DaggerBLEMapComponent;
+import com.onlylemi.mapview.agorithm.hybrid.HybridSubject;
+import com.onlylemi.mapview.agorithm.pdr.PdrObserver;
+import com.onlylemi.mapview.dagger.DaggerHybridMapComponent;
 import com.onlylemi.mapview.library.MapView;
 import com.onlylemi.mapview.library.MapViewListener;
 import com.onlylemi.mapview.library.layer.LocationLayer;
@@ -65,11 +60,9 @@ import com.onlylemi.mapview.search.SearchController;
 import com.onlylemi.mapview.search.SearchResult;
 import com.onlylemi.mapview.service.BluetoothLeService;
 import com.onlylemi.mapview.service.LocationService;
-import com.onlylemi.mapview.parameter.TestData;
-import com.onlylemi.mapview.service.LocationServiceImproved;
-import com.onlylemi.mapview.utils.FileUtil;
 import com.onlylemi.mapview.utils.LogUtil;
 import com.onlylemi.mapview.utils.PackageUtils;
+import com.onlylemi.mapview.utils.SignalProcessUtil;
 import com.onlylemi.mapview.utils.ViewUtils;
 
 import java.io.IOException;
@@ -80,16 +73,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
- * Created by admin on 2017/10/30.
+ * Created by admin on 2017/12/20.
  */
-public class BLEMapActivity  extends AppCompatActivity implements SensorEventListener,
-        ActionMenuView.OnMenuItemClickListener,
-        SearchController.Listener{
-    private final static String TAG = "BLEMapActivity";
-    public static String HEART_RATE_MEASUREMENT = "0000ffe1-0000-1000-8000-00805f9b34fb"; //心率测量
-    public static String EXTRAS_DEVICE_NAME = "DEVICE_NAME"; //设备名字
-    public static String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS"; //设备地址
-    public static String EXTRAS_DEVICE_RSSI = "RSSI"; //蓝牙信号强度
+
+public class HybridMapActivity extends AppCompatActivity implements ActionMenuView.OnMenuItemClickListener,
+        SearchController.Listener,PdrObserver {
+    private final static String TAG = "HybridMapActivity";
     public static String EXTRA_SCENE_SELECT="SCENE_SELECT";//场景选择
     public static final int icon_search=1;
     //添加工厂地图起点对应的像素坐标
@@ -102,15 +91,38 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
     public static final float COMPANY_MAP_START_Y=400;
     public static final float COMPANY_MAP_END_X=1333;
     public static final float COMPANY_MAP_END_Y=1172;
+    private Bundle b;
+    //添加搜索框
+    private FloatingSearchView mSearchView;
+    private static final int REQ_CODE_SPEECH_INPUT = 42;
+    private HybridMapActivity.SearchAdapter mAdapter;
+    //室内地图场景
+    public static String sceneName;
+    private static float prevX=546; //记录上一次的坐标
+    private static float prevY=343; //记录上一次的坐标
+    private MapView mapView;
+    private LocationLayer locationLayer;  //位置层
+    private MarkLayer markLayer;  //标记层
+    private RouteLayer routeLayer; //路由层
+    private static List<PointF> nodes; //路径节点
+    private static List<PointF> nodesContract; //路径直通节点的联系
+    private static List<PointF> marks;
+    private static List<String> marksName;
+    private boolean needNavigated=false;
+    private static PointF targetP;
+    private SensorManager sensorManager; //传感器管理层
+    private HybridSubject pdrDectectionSubject;
 
     public static final int UPDATE_CURRENT_POS=1; //更新当前位置标志
     public static final String UPDATE_CURRENT_POS_KEY="update_cur_pos_key";
 
-    //添加搜索框
-    private FloatingSearchView mSearchView;
-    private static final int REQ_CODE_SPEECH_INPUT = 42;
-    private BLEMapActivity.SearchAdapter mAdapter;
-
+    //蓝牙相关
+    private Handler mhandler = new Handler();
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    public static String HEART_RATE_MEASUREMENT = "0000ffe1-0000-1000-8000-00805f9b34fb"; //心率测量
+    public static String EXTRAS_DEVICE_NAME = "DEVICE_NAME"; //设备名字
+    public static String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS"; //设备地址
+    public static String EXTRAS_DEVICE_RSSI = "RSSI"; //蓝牙信号强度
     //蓝牙连接状态
     private boolean mConnected = false;
     private String status = "disconnected";
@@ -120,52 +132,16 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
     private String mDeviceAddress;
     //蓝牙信号值
     private String mRssi;
-    private Bundle b;
-    //室内地图场景
-    private String sceneName;
-    private Handler mhandler = new Handler();
-    private static float prevX=546; //记录上一次的坐标
-    private static float prevY=343; //记录上一次的坐标
     //蓝牙service,负责后台的蓝牙服务
     private static BluetoothLeService mBluetoothLeService;
-    //定位服务
-    private static LocationServiceImproved mLocationService;
-    private MapView mapView;
-    private LocationLayer locationLayer;
-    private MarkLayer markLayer;
-    private RouteLayer routeLayer;
-    private static List<PointF> nodes;
-    private static List<PointF> nodesContract;
-    private static List<PointF> marks;
-    private static List<String> marksName;
-    private boolean needNavigated=false;
-    private static PointF targetP;
-    private boolean openSensor = false; //是否开启传感器
-    private SensorManager sensorManager; //传感器管理层
-    private Sensor gyroscopeSensor=null;//陀螺仪传感器 测量角速度
-    private Sensor orientSensor=null;//方向传感器
-    private Sensor acceleSensor=null;//加速度传感器
-    private Sensor gravitySensor=null;//重力加速度传感器
-    private Sensor linearAcceleSensor=null;//线性加速度传感器,测量x,y,z三轴的线性加速度,去掉重力加速度的影响
-    private Sensor megneticSensor=null; //地磁场传感器
-    private float[] accelerometerValues=new float[3];
-    private float[] magneticFieldValues=new float[3];
-    private float[] orientationValues=new float[3];
-    private float[] gyroscopeValues=new float[3];
-    private float[] gravityValues=new float[3];
-    private float[] linearAcceleValues=new float[3];
-
-    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
     //蓝牙特征值
     private static BluetoothGattCharacteristic target_chara = null;
-
-    //写文件
-    private static String fileName="sensorOrientTest.txt";
-    private static String filePath="/sdcard/indoorLocation/";
-    private StringBuilder recordSb;
+    //定位服务
+    private static LocationService mLocationService;
 
     @Inject
     SearchController mSearch; //搜索控制器通过依赖注入方式注入
+
     private Handler myHandler=new Handler() {
         // 2.重写消息处理函数
         @Override
@@ -177,7 +153,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                     float[] tag2dpos = msg.getData().getFloatArray(UPDATE_CURRENT_POS_KEY);
                     prevY=tag2dpos[1];
                     prevX=tag2dpos[0];
-                    LogUtil.d(TAG,"prex="+prevX+",prevy="+prevY);
+                    LogUtil.i(TAG,"prex="+prevX+",prevy="+prevY+",步数为:"+tag2dpos[2]);
                     if(locationLayer!=null){
                         if(needNavigated){
                             //todo 添加路径导航功能
@@ -188,8 +164,8 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                                     routeLayer.setRouteList(routeList);
                                     markLayer.setIsClickMark(false);
                                     needNavigated=false;
-                                    Toast.makeText( BLEMapActivity.this,"你已经到达终点附近了，谢谢使用!",Toast.LENGTH_LONG).show();
-                               }
+                                    Toast.makeText(HybridMapActivity.this,"你已经到达终点附近了，谢谢使用!",Toast.LENGTH_LONG).show();
+                                }
                                 else{
                                     try{
                                         if(sceneName.equals("Factory")){
@@ -223,25 +199,36 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
 
 
     @Override
+    public void update(double posx,double posy,double curStep){
+        float[] tag2dpos=convertPoint(new double[]{posx,posy,curStep});
+        Message msg=new Message();
+        msg.what = UPDATE_CURRENT_POS;
+        Bundle b = new Bundle();
+        b.putFloatArray(UPDATE_CURRENT_POS_KEY, tag2dpos);
+        msg.setData(b);
+        //将连接状态更新的UI的textview上
+        myHandler.sendMessage(msg);
+
+    }
+    @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         // TODO Auto-generated method stub
-        DaggerBLEMapComponent.builder().build().inject(this);
+        DaggerHybridMapComponent.builder().build().inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blemap_test);
-
         b = getIntent().getExtras();
         //从意图获取显示的蓝牙信息
         mDeviceName = b.getString(EXTRAS_DEVICE_NAME);
         mDeviceAddress = b.getString(EXTRAS_DEVICE_ADDRESS);
         mRssi = b.getString(EXTRAS_DEVICE_RSSI);
         sceneName=b.getString(EXTRA_SCENE_SELECT);
-        /*启动位置计算*/
-        Intent locationServiceIntent=new Intent(this,LocationServiceImproved.class);
+         /*启动位置计算*/
+        Intent locationServiceIntent=new Intent(this,LocationService.class);
         boolean flag=bindService(locationServiceIntent,mLocationServiceConnection,BIND_AUTO_CREATE);
         /* 启动蓝牙service */
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        flag=bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
         /*启动地图*/
         mapView = (MapView) findViewById(R.id.mapview); //寻找地图
         Bitmap bitmap = null;
@@ -249,7 +236,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             if(sceneName.equals("Factory")) {
                 bitmap = BitmapFactory.decodeStream(getAssets().open("fac20171130.png"));
                 //bitmap = BitmapFactory.decodeStream(getAssets().open("fac20171128.png"));
-               // bitmap = BitmapFactory.decodeStream(getAssets().open("fac20171125.png"));
+                // bitmap = BitmapFactory.decodeStream(getAssets().open("fac20171125.png"));
                 setTitle("工厂机房地图");
             }
             else if(sceneName.equals("Company")){
@@ -334,22 +321,17 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             }
         });
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-        gyroscopeSensor=sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        orientSensor=sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-        megneticSensor=sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        acceleSensor=sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        gravitySensor=sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-        linearAcceleSensor=sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        pdrDectectionSubject=new HybridSubject(sensorManager);
+        pdrDectectionSubject.registerObserver(this);
         initSearchView();
     }
 
     private void initSearchView(){
         mSearch.setListener(this);
         mSearchView = (FloatingSearchView) findViewById(R.id.search_location);
-        mSearchView.setAdapter(mAdapter = new BLEMapActivity.SearchAdapter());
+        mSearchView.setAdapter(mAdapter = new HybridMapActivity.SearchAdapter());
         mSearchView.showLogo(false);
-        mSearchView.setItemAnimator(new BLEMapActivity.CustomSuggestionItemAnimator(mSearchView));
+        mSearchView.setItemAnimator(new HybridMapActivity.CustomSuggestionItemAnimator(mSearchView));
 
         updateNavigationIcon(icon_search);
         mSearchView.showIcon(true);
@@ -416,30 +398,32 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
     @Override
     protected void onResume()
     {
-        sensorManager.registerListener(this,gyroscopeSensor,SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this,orientSensor,SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this,megneticSensor,SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this,acceleSensor,SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this,gravitySensor,SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this,linearAcceleSensor,SensorManager.SENSOR_DELAY_UI);
         super.onResume();
         //绑定广播接收器
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         needNavigated=false;
         if (mBluetoothLeService != null)
-        {   System.out.println("连接蓝牙服务失败");
-            //根据蓝牙地址，建立连接
+        {   //根据蓝牙地址，建立连接
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-            updateConnectionState("连接蓝牙服务失败!");
+            if(!result){
+                updateConnectionState("连接蓝牙服务失败!");
+            }
             Log.d(TAG, "Connect request result=" + result);
         }else{
             updateConnectionState("未发现蓝牙服务!");
         }
+        if(mLocationService==null){
+            LogUtil.w(TAG,"连接位置服务失败!");
+        }
+        pdrDectectionSubject.start();
+        needNavigated=false;
     }
 
     @Override
     protected void onPause(){
-        sensorManager.unregisterListener(this);
+        //解除广播接收器
+       // unregisterReceiver(mGattUpdateReceiver);
+        pdrDectectionSubject.stop();
         super.onPause();
     }
 
@@ -452,6 +436,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
         {
             mBluetoothLeService = ((BluetoothLeService.LocalBinder) service)
                     .getService();
+            LogUtil.w(TAG,"连接蓝牙成功!");
             if (!mBluetoothLeService.initialize())
             {
                 Log.e(TAG, "Unable to initialize Bluetooth");
@@ -473,7 +458,8 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
     private final ServiceConnection mLocationServiceConnection=new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            mLocationService=((LocationServiceImproved.LocalBinder) service).getService();
+            LogUtil.w(TAG,"开始连接定位服务成功!");
+            mLocationService=((LocationService.LocalBinder) service).getService();
         }
 
         @Override
@@ -513,7 +499,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                 displayGattServices(mBluetoothLeService
                         .getSupportedGattServices());
                 System.out.println("BroadcastReceiver :"
-                       + "device SERVICES_DISCOVERED");
+                        + "device SERVICES_DISCOVERED");
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action))//有效数据
             {
                 //处理发送过来的数据
@@ -523,25 +509,29 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                     return;
                 }
                 Log.i(TAG,"recvData="+recvData);
+
                 mLocationService.calcPosition(recvData,sceneName);
                 Log.d(TAG,"BroadcastReceiver onData:"
                         + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-            }else if(LocationServiceImproved.ACTION_POSITION_AVAILABLE.equals(action)){
-                double[] posTag=intent.getDoubleArrayExtra(LocationServiceImproved.EXTRA_DATA);
-                float[] tag2dpos=convertPoint(posTag);
-                Message msg=new Message();
-                msg.what = UPDATE_CURRENT_POS;
-                Bundle b = new Bundle();
-                b.putFloatArray(UPDATE_CURRENT_POS_KEY, tag2dpos);
-                msg.setData(b);
-                //将连接状态更新的UI的textview上
-                myHandler.sendMessage(msg);
-            }else if(LocationServiceImproved.ACTION_POSITION_CALC_FAIL.equals(action)){
-               // LogUtil.w(TAG,"At time:"+System.currentTimeMillis()+"(ms) update position fail:"+intent.getStringExtra(LocationServiceImproved.EXTRA_DATA));
+            }else if(LocationService.ACTION_POSITION_AVAILABLE.equals(action)){
+                double[] posTag=intent.getDoubleArrayExtra(LocationService.EXTRA_DATA);
+                LogUtil.i(TAG,"At time:"+System.currentTimeMillis()+" get position:"+posTag[0]+","+posTag[1]+","+posTag[2]);
+                //将mm 单位转换为 m
+                posTag[0]=posTag[0]/1000.0;
+                posTag[1]=posTag[1]/1000.0;
+                posTag[2]=posTag[2]/1000.0;
+                pdrDectectionSubject.setCoord(posTag,0);
+            }else if(LocationService.ACTION_POSITION_CALC_FAIL.equals(action)){
+                 LogUtil.w(TAG,"At time:"+System.currentTimeMillis()+"(ms) update position fail:"+intent.getStringExtra(LocationService.EXTRA_DATA));
             }
         }
     };
 
+    /**
+     *
+     * @param tagPos tagPos单位为m
+     * @return
+     */
     private float[] convertPoint(double[] tagPos){
         double minx=0.0;
         double miny=2.8;
@@ -549,8 +539,11 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
         double maxy=18.43;
         double canvasWidth=FACTORY_MAP_END_X-FACTORY_MAP_START_X;
         double canvasHeight=FACTORY_MAP_END_Y-FACTORY_MAP_START_Y;
-        double x=tagPos[0];
-        double y=tagPos[1];
+        double[] enupos=new double[]{tagPos[0],tagPos[1],0};
+        double theta=0;//单位:度
+        double[] swuPos= SignalProcessUtil.enuToComCoord(enupos,theta);
+        double x=swuPos[0];
+        double y=swuPos[1];
         double pixl_x=0;
         double pixl_y=0;
         if(sceneName.equals("Factory")){
@@ -561,8 +554,8 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             maxy=18.43;
             canvasWidth=FACTORY_MAP_END_X-FACTORY_MAP_START_X;
             canvasHeight=FACTORY_MAP_END_Y-FACTORY_MAP_START_Y;
-            pixl_x=(x/1000.0)/(maxx-minx)*canvasWidth+FACTORY_MAP_START_X;
-            pixl_y=(y/1000.0)/(maxy-miny)*canvasHeight+FACTORY_MAP_START_Y;
+            pixl_x=x/(maxx-minx)*canvasWidth+FACTORY_MAP_START_X;
+            pixl_y=y/(maxy-miny)*canvasHeight+FACTORY_MAP_START_Y;
         }else if(sceneName.equals("Company")){
             //展厅大小
             minx=3.2;
@@ -571,10 +564,10 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             maxy=4.35+5.6;
             canvasWidth=COMPANY_MAP_END_X-COMPANY_MAP_START_X;
             canvasHeight=COMPANY_MAP_END_Y-COMPANY_MAP_START_Y;
-            pixl_x=(x/1000.0)/(maxx-minx)*canvasWidth+COMPANY_MAP_START_X;
-            pixl_y=(y/1000.0)/(maxy-miny)*canvasHeight+COMPANY_MAP_START_Y;
+            pixl_x=x/(maxx-minx)*canvasWidth+COMPANY_MAP_START_X;
+            pixl_y=y/(maxy-miny)*canvasHeight+COMPANY_MAP_START_Y;
         }
-        float[] tag2dpos=new float[] {  new Float(pixl_x),new Float(pixl_y)};
+        float[] tag2dpos=new float[] {  new Float(pixl_x),new Float(pixl_y),new Float(tagPos[2])};
         return tag2dpos;
     }
 
@@ -594,8 +587,8 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                 .addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         //添加位置服务过滤器
-        intentFilter.addAction(LocationServiceImproved.ACTION_POSITION_CALC_FAIL);
-        intentFilter.addAction(LocationServiceImproved.ACTION_POSITION_AVAILABLE);
+        intentFilter.addAction(LocationService.ACTION_POSITION_CALC_FAIL);
+        intentFilter.addAction(LocationService.ACTION_POSITION_AVAILABLE);
         return intentFilter;
     }
 
@@ -690,7 +683,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-      //  getMenuInflater().inflate(R.menu.menu_bitmap_layer_test, menu);
+        //  getMenuInflater().inflate(R.menu.menu_bitmap_layer_test, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -700,76 +693,6 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
 
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private int count=1;
-    private int initRecordCnt=0;
-    //对于陀螺仪,测量的是x、y、z三个轴向的角速度，分别从values[0]、values[1]、values[2]中读取，单位为弧度/秒
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-
-         if(count++ % 40==0){
-             if(initRecordCnt==0){
-                 recordSb=new StringBuilder();
-                 recordSb.append("time,TYPE_MAGNETIC_FIELD,TYPE_ORIENTATION,TYPE_GYROSCOPE,TYPE_ACCELEROMETER,TYPE_GRAVITY,TYPE_LINEAR_ACCELERATION\r\n");
-                 FileUtil.writeTxtToFile(recordSb.toString(),filePath,fileName);
-                 initRecordCnt++;
-             }
-             if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-                 LogUtil.w(TAG,"磁力传感器方向角:"+event.values[0]+",pitch:"+event.values[1]+",roll:"+event.values[2]);
-                 magneticFieldValues=event.values;
-             }
-             else if(event.sensor.getType()==Sensor.TYPE_ORIENTATION){
-                 LogUtil.w(TAG,"方向角:"+event.values[0]+",pitch:"+event.values[1]+",roll:"+event.values[2]);
-                 orientationValues=event.values;
-             }
-             else if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE){
-                 LogUtil.w(TAG,"陀螺仪事件角速度(rad/s)：" + " x:" + event.values[0] + " y:" + event.values[1]
-                         + " z:" + event.values[2]);
-                 gyroscopeValues=event.values;
-             }
-             else if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-                 LogUtil.w(TAG,"加速器：" + " x:" + event.values[0] + " y:" + event.values[1]
-                         + " z:" + event.values[2]);
-                 accelerometerValues=event.values;
-             }else if(event.sensor.getType() == Sensor.TYPE_GRAVITY){
-                 LogUtil.w(TAG,"重力仪：" + " x:" + event.values[0] + " y:" + event.values[1]
-                         + " z:" + event.values[2]);
-                 gravityValues=event.values;
-             }else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION){
-                 LogUtil.w(TAG,"线性加速仪" + " x:" + event.values[0] + " y:" + event.values[1]
-                         + " z:" + event.values[2]);
-                 linearAcceleValues=event.values;
-             }
-             if(initRecordCnt>0){
-                 recordSb=new StringBuilder();
-                 recordSb.append(System.currentTimeMillis());
-                 recordSb.append(",");
-                 recordSb.append(magneticFieldValues[0]+","+magneticFieldValues[1]+","+magneticFieldValues[2]);
-                 recordSb.append(",");
-                 recordSb.append(orientationValues[0]+","+orientationValues[1]+","+orientationValues[2]);
-                 recordSb.append(",");
-                 recordSb.append(gyroscopeValues[0]+","+gyroscopeValues[1]+","+gyroscopeValues[2]);
-                 recordSb.append(",");
-                 recordSb.append(accelerometerValues[0]+","+accelerometerValues[1]+","+accelerometerValues[2]);
-                 recordSb.append(",");
-                 recordSb.append(gravityValues[0]+","+gravityValues[1]+","+gravityValues[2]);
-                 recordSb.append(",");
-                 recordSb.append(linearAcceleValues[0]+","+linearAcceleValues[1]+","+linearAcceleValues[2]);
-                 recordSb.append("\r\n");
-                 FileUtil.writeTxtToFile(recordSb.toString(),filePath,fileName);
-                 initRecordCnt++;
-                 LogUtil.w(TAG,"initRecordCnt="+initRecordCnt);
-             }
-             count = 1;
-            // calculateOrientation(accelerometerValues,magneticFieldValues);
-         }
-
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     private void search(String query) {
@@ -854,7 +777,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             PointF targetPoint= LocationSet.locationMap.get(result.title);
             int index=findMarkIndex(result.title);
             if(index==-1){
-                Toast.makeText(BLEMapActivity.this,"地图上未找到该标识点!",Toast.LENGTH_SHORT).show();
+                Toast.makeText(HybridMapActivity.this,"地图上未找到该标识点!",Toast.LENGTH_SHORT).show();
                 return;
             }
             if(targetPoint!=null ){
@@ -862,15 +785,15 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                     List<Integer> routeList=new ArrayList<>();
                     routeLayer.setRouteList(routeList);
                 }else if((sceneName.equals("Factory") && !MapConfigData3.getFactoryMarksName().contains(result.title))
-                || (sceneName.equals("Company") && !MapConfigData3.getCompanyMarksName().contains(result.title))){
+                        || (sceneName.equals("Company") && !MapConfigData3.getCompanyMarksName().contains(result.title))){
                     mapView.refresh();
                     Toast.makeText(this,"目前地图不存在该地点,请切换地图再进行查找",Toast.LENGTH_SHORT).show();
                     return;
                 }else{
-                        markLayer.setIsClickMark(true);
-                        markLayer.setNum(index);
-                        markLayer.getMarkIsClickListener().markIsClick(index);
-                        mapView.mapCenterWithPoint(targetPoint.x,targetPoint.y);
+                    markLayer.setIsClickMark(true);
+                    markLayer.setNum(index);
+                    markLayer.getMarkIsClickListener().markIsClick(index);
+                    mapView.mapCenterWithPoint(targetPoint.x,targetPoint.y);
                 }
             }
         }
@@ -893,6 +816,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
             }
         }
         return index;
+
     }
 
     private void showProgressBar(boolean show) {
@@ -908,7 +832,7 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
         return new SearchResult("没找到该地名,请换个关键词试试");
     }
 
-    private class SearchAdapter extends ArrayRecyclerAdapter<SearchResult, BLEMapActivity.SuggestionViewHolder> {
+    private class SearchAdapter extends ArrayRecyclerAdapter<SearchResult, HybridMapActivity.SuggestionViewHolder> {
 
         private LayoutInflater inflater;
 
@@ -917,13 +841,13 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
         }
 
         @Override
-        public BLEMapActivity.SuggestionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public HybridMapActivity.SuggestionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             if(inflater == null) inflater = LayoutInflater.from(parent.getContext());
-            return new BLEMapActivity.SuggestionViewHolder(inflater.inflate(R.layout.item_suggestion, parent, false));
+            return new HybridMapActivity.SuggestionViewHolder(inflater.inflate(R.layout.item_suggestion, parent, false));
         }
 
         @Override
-        public void onBindViewHolder(BLEMapActivity.SuggestionViewHolder holder, int position) {
+        public void onBindViewHolder(HybridMapActivity.SuggestionViewHolder holder, int position) {
             holder.bind(getItem(position));
         }
 
@@ -1009,17 +933,4 @@ public class BLEMapActivity  extends AppCompatActivity implements SensorEventLis
                     .setInterpolator(INTERPOLATOR_REMOVE);
         }
     }
-
-    private void calculateOrientation(float[] accelerometerValues,float[] magneticFieldValues){
-          float[] values=new float[3];
-          float[] R=new float[9];
-          SensorManager.getRotationMatrix(R,null,accelerometerValues,magneticFieldValues);
-          SensorManager.getOrientation(R,values);
-          values[0]=(float) Math.toDegrees(values[0]);
-          values[1]=(float) Math.toDegrees(values[1]);
-          values[2]=(float) Math.toDegrees(values[2]);
-          LogUtil.w(TAG,"通过加速度和磁感应强度计算的方向角:"+values[0]+",pitch:"+values[1]+",roll:"+values[2]);
-
-    }
-
 }

@@ -10,6 +10,10 @@ import Jama.Matrix;
 
 public class PosEstimationWithCG extends AbstractPosEstimation implements LocationI {
     private static final String TAG="PostEstimationWithCG";
+    //写文件
+    private static String fileName="uwbCGDistance.txt";
+    private static String filePath="/sdcard/indoorLocation/";
+
     @Override
     public double[] convertDistanceToPos(String baseStationInfo,String sceneName){
         double[][] bsInfoArr=parseDistanceStr(baseStationInfo, Constant.NO_ERROR_CORRECTED, Constant.BASE_STATION_DOWN_LIMIT,sceneName);
@@ -25,6 +29,7 @@ public class PosEstimationWithCG extends AbstractPosEstimation implements Locati
             //     LogUtil.d(TAG,"baseStationInfo is invalid");
             return null;
         }
+        writeUwbDataToFile(filePath,fileName,baseStationInfo);
         double[][] bsspos=new double[baseStationInfo.length][3];
         //    LogUtil.d(TAG,"After copy bsspos the first line value:"+bsspos[0][0]+","+bsspos[0][1]+","+bsspos[0][2]);
         ArrayUtil.arrayCopy(baseStationInfo,bsspos);

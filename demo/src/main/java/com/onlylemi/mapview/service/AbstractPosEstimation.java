@@ -1,6 +1,8 @@
 package com.onlylemi.mapview.service;
 
+import com.onlylemi.mapview.agorithm.filter.Kalman;
 import com.onlylemi.mapview.parameter.Constant;
+import com.onlylemi.mapview.utils.FileUtil;
 import com.onlylemi.mapview.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -20,7 +22,8 @@ public abstract class AbstractPosEstimation {
     private static final int NO_ERROR_CORRECTED=0;
     private static final int ERROR_CORRECTED=1;
     private long prevRecvTime=System.currentTimeMillis(); //上一次接收的时间和字符串
-    private int prevRecvLastIndex=0; //上一次接收的最后一个索引
+    private String  restNotDealRecvStr=null; //剩下没处理的字符串
+    private Kalman kalmanFilter;
     /**
      *
      * @param recvStr  通过蓝牙接收到的来自超宽带标签板的测距数据
@@ -29,32 +32,34 @@ public abstract class AbstractPosEstimation {
      * @return 返回一个关于基站的坐标和相关测距的二维数组 每一行数据的数据结构形式为 基站的x,y,z坐标,标签与基站的测量距离,相对应的基站名称
      */
     public double[][] parseDistanceStr(String recvStr,int dealMethod,int baseLowBound,String sceneName){
-//        LogUtil.i(TAG,"recvStr="+recvStr);
         if(recvStrBuild==null){
             recvStrBuild=new StringBuilder();
         }
         recvStrBuild.append(recvStr);
-  //      LogUtil.w(TAG,"Abstract recvStr:"+recvStrBuild.toString());
-        //如果接收时间间隔超过2秒,则删除之前收到的数据
-//        if(System.currentTimeMillis()-prevRecvTime>2000){
-//            recvStrBuild.delete(0,prevRecvLastIndex);
-//            prevRecvTime=System.currentTimeMillis();
-//            prevRecvLastIndex=recvStrBuild.length();
-//        }
-
-        String[] baseStationStrList=recvStrBuild.toString().split("\r\n");
-        //小于4,说明收到的基站测距数据小于4个,无法进行测距
-        if(baseStationStrList.length<7){
+        restNotDealRecvStr=restNotDealRecvStr+recvStrBuild.toString();
+        recvStrBuild.delete(0,recvStrBuild.length());
+        if(!restNotDealRecvStr.contains("start\r\n") || !restNotDealRecvStr.contains("end\r\n")){
             return null;
         }
-        LogUtil.d(TAG,"--------------------------------------------------------");
-        LogUtil.d(TAG,"cost time:"+(System.currentTimeMillis()-prevRecvTime)+"ms");
-        LogUtil.d(TAG,"recvStr="+(recvStrBuild.toString()));
-        LogUtil.d(TAG,"--------------------------------------------------------");
-        prevRecvTime=System.currentTimeMillis();
-        recvStrBuild.delete(0,recvStrBuild.length());
+        String packetRecvStr=null;
+        if(restNotDealRecvStr.indexOf("start\r\n")<restNotDealRecvStr.indexOf("end\r\n")){
+            packetRecvStr=restNotDealRecvStr.substring(restNotDealRecvStr.indexOf("start\r\n")+7,restNotDealRecvStr.indexOf("end\r\n"));
+            restNotDealRecvStr=restNotDealRecvStr.substring(restNotDealRecvStr.indexOf("end\r\n")+5);
+        }else {
+            restNotDealRecvStr=restNotDealRecvStr.substring(restNotDealRecvStr.indexOf("end\r\n")+5);
+            return null;
+        }
 
-        prevRecvLastIndex=0;
+        String[] baseStationStrList=packetRecvStr.split("\r\n");
+        //小于4,说明收到的基站测距数据小于4个,无法进行测距
+        if(baseStationStrList.length<4){
+            return null;
+        }
+        LogUtil.i(TAG,"--------------------------------------------------------");
+        LogUtil.i(TAG,"cost time:"+(System.currentTimeMillis()-prevRecvTime)+"ms");
+        LogUtil.i(TAG,"recvStr="+packetRecvStr);
+        LogUtil.i(TAG,"--------------------------------------------------------");
+        prevRecvTime=System.currentTimeMillis();
         //存放每个基站收到的测距数据
         HashMap<String,Integer> distanceCntMap=new HashMap<String,Integer>();
         //存放收到的每个基站测距数据位于标签测距数组中的索引
@@ -91,6 +96,7 @@ public abstract class AbstractPosEstimation {
                          sbmes.append(",");
                          sbmes.append(e.getMessage());
                          LogUtil.w(TAG,sbmes.toString());
+                         return null;
                  }
             }
         }
@@ -100,6 +106,10 @@ public abstract class AbstractPosEstimation {
                     dealMethod,
                     baseLowBound,
                      sceneName);
+        if(bsDistanceArr==null || bsDistanceArr.length<4){
+            LogUtil.w(TAG,"经过处理后的基站个数小于4个,不能计算标签坐标!");
+            return null;
+        }
         return bsDistanceArr;
 
     }
@@ -186,16 +196,31 @@ public abstract class AbstractPosEstimation {
                 LogUtil.w(TAG,"The dealMethod:"+dealMethod+" cannot be dealed!");
                 return null;
         }
-
+    }
+    //
+    public double[] filterWithKalman(double[] estimatePosition){
+        if(estimatePosition==null)
+            return null;
+        if(kalmanFilter==null){
+            kalmanFilter=new Kalman(estimatePosition[0]/1000.0,estimatePosition[1]/1000.0,0,0);
+            return estimatePosition;
+        }
+        double[] positionTag=kalmanFilter.estimatePos(estimatePosition);
+        double[] result=new double[]{positionTag[0]*1000,positionTag[1]*1000,estimatePosition[2]};
+        return result;
     }
 
-//    private static class RecvDataParser(){
-//        private
-//        public RecvDataParser(String recvData){
-//
-//        }
-//    }
-
-
+    public void writeUwbDataToFile(String filePath,String fileName,double[][] baseInfo){
+        StringBuilder sb=new StringBuilder();
+        sb.append(System.currentTimeMillis());
+        sb.append(",");
+        for(int i=0;i<baseInfo.length;i++){
+            for(int j=0;j<baseInfo[0].length;j++){
+                sb.append(baseInfo[i][j]+",");
+            }
+        }
+        sb.append("\r\n");
+        FileUtil.writeTxtToFile(sb.toString(),filePath,fileName);
+    }
 
 }

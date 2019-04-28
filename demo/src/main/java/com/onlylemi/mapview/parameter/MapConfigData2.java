@@ -123,7 +123,7 @@ public class MapConfigData2 {
         companyMarksName.add("ISR柜1");
         companyMarksName.add("ISR柜2");
         companyMarksName.add("ISR柜3");
-        companyMarksName.add("ISR柜4");
+        companyMarksName.add("列头柜");
         companyMarksName.add("综合布线机柜");
         return companyMarksName;
     }
@@ -405,7 +405,7 @@ public class MapConfigData2 {
         factoryNodes.add(new PointF(232,923));//58 B通道门口坐标
         factoryNodes.add(new PointF(405,923)); //59 B通道右走廊坐标
 
-        factoryNodes.add(new PointF(56,955));// 60 B通道门口第9行坐标1
+        factoryNodes.add(new PointF(56,955));// 60 B通道门口第9行坐标
         factoryNodes.add(new PointF(232,955));//61 B通道门口坐标
         factoryNodes.add(new PointF(405,955)); //62 B通道右走廊坐标
 
@@ -422,6 +422,7 @@ public class MapConfigData2 {
         factoryNodes.add(new PointF(232,1112));//71 过道坐标3
         factoryNodes.add(new PointF(305,1112));//72 过道坐标4
         factoryNodes.add(new PointF(405,1112)); //73 过道坐标5
+        factoryNodes.add(new PointF(232,1047));//74
 
         return factoryNodes;
     }
@@ -493,7 +494,7 @@ public class MapConfigData2 {
         factoryNodesContact.add(new PointF(38,41));
 
         factoryNodesContact.add(new PointF(39,42));
-        factoryNodesContact.add(new PointF(40,42));
+        factoryNodesContact.add(new PointF(40,43));
         factoryNodesContact.add(new PointF(41,44));
 
         factoryNodesContact.add(new PointF(42,45));
@@ -530,11 +531,16 @@ public class MapConfigData2 {
 
         factoryNodesContact.add(new PointF(66,69));
         factoryNodesContact.add(new PointF(67,71));
+        factoryNodesContact.add(new PointF(67,74));
         factoryNodesContact.add(new PointF(68,73));
+
         factoryNodesContact.add(new PointF(69,70));
         factoryNodesContact.add(new PointF(70,71));
+        factoryNodesContact.add(new PointF(70,74));
         factoryNodesContact.add(new PointF(71,72));
+        factoryNodesContact.add(new PointF(71,74));
         factoryNodesContact.add(new PointF(72,73));
+        factoryNodesContact.add(new PointF(72,74));
         return factoryNodesContact;
     }
 }

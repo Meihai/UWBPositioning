@@ -2,62 +2,59 @@ package com.onlylemi.mapview.parameter;
 
 import android.graphics.PointF;
 
-import com.onlylemi.mapview.service.Point;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by admin on 2017/11/24.
+ * Created by admin on 2017/11/30.
  */
 
-public class MapConfigData {
-
+public class MapConfigData3 {
     //工厂机柜坐标,一共40个 地图大小440*850
     public static List<PointF> getFactoryMarks() {
         List<PointF> marks = new ArrayList<>();
         //A通道左边标记点
-        marks.add(new PointF(151,295));
-        marks.add(new PointF(151,339));
-        marks.add(new PointF(151,378));
-        marks.add(new PointF(151,423));
-        marks.add(new PointF(151,467));
-        marks.add(new PointF(151,511));
-        marks.add(new PointF(151,547));
+        marks.add(new PointF(147,398));
+        marks.add(new PointF(147,453));
+        marks.add(new PointF(147,495));
+        marks.add(new PointF(147,530));
+        marks.add(new PointF(147,564));
+        marks.add(new PointF(147,604));
+        marks.add(new PointF(147,654));
         //A通道右边标记点
-        marks.add(new PointF(379,295));
-        marks.add(new PointF(379,339));
-        marks.add(new PointF(379,378));
-        marks.add(new PointF(379,423));
-        marks.add(new PointF(379,467));
-        marks.add(new PointF(379,511));
-        marks.add(new PointF(379,547));
+        marks.add(new PointF(327,398));
+        marks.add(new PointF(327,453));
+        marks.add(new PointF(327,495));
+        marks.add(new PointF(327,530));
+        marks.add(new PointF(327,564));
+        marks.add(new PointF(327,604));
+        marks.add(new PointF(327,654));
 
         //B 通道左边标记点
-        marks.add(new PointF(151,655));
-        marks.add(new PointF(151,696));
-        marks.add(new PointF(151,737));
-        marks.add(new PointF(151,781));
-        marks.add(new PointF(151,824));
-        marks.add(new PointF(151,871));
-        marks.add(new PointF(151,910));
-        marks.add(new PointF(151,953));
-        marks.add(new PointF(151,996));
-        marks.add(new PointF(151,1038));
-        marks.add(new PointF(151,1080));
+        marks.add(new PointF(147,835));
+        marks.add(new PointF(147,879));
+        marks.add(new PointF(147,922));
+        marks.add(new PointF(147,956));
+        marks.add(new PointF(147,989));
+        marks.add(new PointF(147,1035));
+        marks.add(new PointF(147,1075));
+        marks.add(new PointF(147,1110));
+        marks.add(new PointF(147,1144));
+        marks.add(new PointF(147,1185));
+        marks.add(new PointF(147,1229));
 
         //B通道右边标记点
-        marks.add(new PointF(379,655));
-        marks.add(new PointF(379,696));
-        marks.add(new PointF(379,737));
-        marks.add(new PointF(379,781));
-        marks.add(new PointF(379,824));
-        marks.add(new PointF(379,871));
-        marks.add(new PointF(379,910));
-        marks.add(new PointF(379,953));
-        marks.add(new PointF(379,996));
-        marks.add(new PointF(379,1038));
-        marks.add(new PointF(379,1080));
+        marks.add(new PointF(327,835));
+        marks.add(new PointF(327,879));
+        marks.add(new PointF(327,922));
+        marks.add(new PointF(327,956));
+        marks.add(new PointF(327,989));
+        marks.add(new PointF(327,1035));
+        marks.add(new PointF(327,1075));
+        marks.add(new PointF(327,1110));
+        marks.add(new PointF(327,1144));
+        marks.add(new PointF(327,1185));
+        marks.add(new PointF(327,1229));
         return marks;
     }
 
@@ -330,109 +327,125 @@ public class MapConfigData {
 
     public static List<PointF> getFctoryNodesList(){
         List<PointF> factoryNodes=new ArrayList<>();
-        factoryNodes.add(new PointF(47,246)); //0 机房左上角坐标
-        factoryNodes.add(new PointF(94,246)); //1 机房上走廊中间坐标1
-        factoryNodes.add(new PointF(152,246)); //2 机房上走廊中间坐标2
-        factoryNodes.add(new PointF(211,246)); //3 机房上走廊中间坐标3
-        factoryNodes.add(new PointF(266,246)); //4 机房上走廊中间坐标4,与A通道门口相对
-        factoryNodes.add(new PointF(266,280)); //5 机房上走廊中间坐标与A通道门口交汇点
-        factoryNodes.add(new PointF(327,246)); //6 机房上走廊中间坐标5
-        factoryNodes.add(new PointF(367,246)); //7 机房上走廊中间坐标6
-        factoryNodes.add(new PointF(439,246)); //8 机房上走廊中间坐标7
-        factoryNodes.add(new PointF(492,246)); //9 机房上走廊中间坐标8
-        factoryNodes.add(new PointF(559,261)); //10 机房门口坐标
-        factoryNodes.add(new PointF(612,261));// 11 机房门外坐标
+        factoryNodes.add(new PointF(58,326)); //0 机房左上角坐标
+        factoryNodes.add(new PointF(99,326)); //1 机房上走廊坐标1 机柜边缘
+        factoryNodes.add(new PointF(147,326)); //2 机房上走廊A通道左边机柜中间坐标
+        factoryNodes.add(new PointF(184,326)); //3 A通道中间边缘
+        factoryNodes.add(new PointF(232,326));// 4 中间通道坐标
+        factoryNodes.add(new PointF(282,326));//5 中间通道右边边缘
+        factoryNodes.add(new PointF(327,326));//6 A通道右边机柜中心位置
+        factoryNodes.add(new PointF(370,326));//7 A通道机柜右边边缘位置
+        factoryNodes.add(new PointF(436,326));//8 A通道右走廊坐标
+        factoryNodes.add(new PointF(505,326));//9 门口坐标
+        factoryNodes.add(new PointF(552,326)); //10门口外坐标
 
-        factoryNodes.add(new PointF(63,295)); //12 机房第一排机柜左坐标
-        factoryNodes.add(new PointF(266,295)); //13 机房第一排机柜中间坐标
-        factoryNodes.add(new PointF(492,295)); //14 机房第一排机柜右坐标
+        factoryNodes.add(new PointF(232,371)); //11A通道门口坐标
 
-        factoryNodes.add(new PointF(63,339)); //15 机房第2排机柜左坐标
-        factoryNodes.add(new PointF(266,339)); //16 机房第2排机柜中间坐标
-        factoryNodes.add(new PointF(492,339)); //17 机房第2排机柜右坐标
+        factoryNodes.add(new PointF(58,398));//12 A通道机柜第1排
+        factoryNodes.add(new PointF(232,398));//13
+        factoryNodes.add(new PointF(436,398));//14
 
-        factoryNodes.add(new PointF(63,378)); //18机房第3排机柜左坐标
-        factoryNodes.add(new PointF(266,378)); //19 机房第3排机柜中间坐标
-        factoryNodes.add(new PointF(492,378)); //20 机房第3排机柜右坐标
+        factoryNodes.add(new PointF(58,453));//15 A通道机柜第2排
+        factoryNodes.add(new PointF(232,453));//16
+        factoryNodes.add(new PointF(436,453));//17
 
-        factoryNodes.add(new PointF(63,423)); //21机房第4排机柜左坐标
-        factoryNodes.add(new PointF(266,423)); //22机房第4排机柜中间坐标
-        factoryNodes.add(new PointF(492,423)); //23 机房第4排机柜右坐标
+        factoryNodes.add(new PointF(58,495));//18 A通道机柜第3排
+        factoryNodes.add(new PointF(232,495));//19
+        factoryNodes.add(new PointF(436,495));//20
 
-        factoryNodes.add(new PointF(63,467)); //24 机房第5排机柜左坐标
-        factoryNodes.add(new PointF(266,467)); //25 机房第5排机柜中间坐标
-        factoryNodes.add(new PointF(492,467)); //26 机房第5排机柜右坐标
+        factoryNodes.add(new PointF(58,530));//21 A通道机柜第4排
+        factoryNodes.add(new PointF(232,530));//22
+        factoryNodes.add(new PointF(436,530));//23
 
-        factoryNodes.add(new PointF(63,511)); //27机房第6排机柜左坐标
-        factoryNodes.add(new PointF(266,511)); //28 机房第6排机柜中间坐标
-        factoryNodes.add(new PointF(492,511)); //29 机房第6排机柜右坐标
+        factoryNodes.add(new PointF(58,564));//24 A通道机柜第5排
+        factoryNodes.add(new PointF(232,564));//25
+        factoryNodes.add(new PointF(436,564));//26
 
-        factoryNodes.add(new PointF(63,547)); //30 机房第7排机柜左坐标
-        factoryNodes.add(new PointF(266,547)); //31 机房第7排机柜中间坐标
-        factoryNodes.add(new PointF(492,547)); //32 机房第7排机柜右坐标
+        factoryNodes.add(new PointF(58,604));//27 A通道机柜第6排
+        factoryNodes.add(new PointF(232,604));//28
+        factoryNodes.add(new PointF(436,604));//29
 
-        factoryNodes.add(new PointF(63,607)); //33 机房中间通道左坐标
-        factoryNodes.add(new PointF(266,607)); //34 机房中间通道中间坐标
-        factoryNodes.add(new PointF(492,607)); //35 机房中间通道右坐标
-        factoryNodes.add(new PointF(160,607)); //36 机房中间通道坐标左中
-        factoryNodes.add(new PointF(384,607)); //37机房中间通道右中坐标
-        factoryNodes.add(new PointF(266,573)); //38 机房过道与A通道门口交汇处
-        factoryNodes.add(new PointF(266,634));//39 机房过道与B通道交汇处坐标
+        factoryNodes.add(new PointF(58,654));//30 A通道机柜第7排
+        factoryNodes.add(new PointF(232,654));//31
+        factoryNodes.add(new PointF(436,654));//32
 
-        factoryNodes.add(new PointF(63,655)); //40 机房第8排机柜左坐标
-        factoryNodes.add(new PointF(266,655)); //41 机房第8排机柜中间坐标
-        factoryNodes.add(new PointF(492,655)); //42 机房第8排机柜右坐标
+        factoryNodes.add(new PointF(58,676));//33 过道与A通道交界处
+        factoryNodes.add(new PointF(232,676));//34
+        factoryNodes.add(new PointF(436,676));//35
 
-        factoryNodes.add(new PointF(63,695)); //43 机房第9排机柜左坐标
-        factoryNodes.add(new PointF(266,695)); //44 机房第9排机柜中间坐标
-        factoryNodes.add(new PointF(492,695)); //45 机房第9排机柜右坐标
+        factoryNodes.add(new PointF(58,746)); //36 过道中心位置
+        factoryNodes.add(new PointF(99,746)); //37 过道与通道机柜边缘
+        factoryNodes.add(new PointF(147,746)); //38 机柜中间坐标
+        factoryNodes.add(new PointF(184,746)); //39 机柜边缘
+        factoryNodes.add(new PointF(232,746));// 40 中间通道坐标
+        factoryNodes.add(new PointF(282,746));// 41中间通道右边边缘
+        factoryNodes.add(new PointF(327,746));// 42 A通道右边机柜中心位置
+        factoryNodes.add(new PointF(370,746));// 43 A通道机柜右边边缘位置
+        factoryNodes.add(new PointF(436,746));// 44 A通道右走廊坐标
 
-        factoryNodes.add(new PointF(63,737)); //46 机房第10排机柜左坐标
-        factoryNodes.add(new PointF(266,737)); //47 机房第10排机柜中间坐标
-        factoryNodes.add(new PointF(492,737)); //48 机房第10排机柜右坐标
+        factoryNodes.add(new PointF(58,812));//45 过道与B通道交界处
+        factoryNodes.add(new PointF(232,812));//46
+        factoryNodes.add(new PointF(436,812));//47
 
-        factoryNodes.add(new PointF(63,781)); //49 机房第11排机柜左坐标
-        factoryNodes.add(new PointF(266,781)); //50 机房第11排机柜中间坐标
-        factoryNodes.add(new PointF(492,781)); //51 机房第11排机柜右坐标
+        //B通道机柜坐标
+        factoryNodes.add(new PointF(58,835));//48 B通道机柜第1排
+        factoryNodes.add(new PointF(232,835));//49
+        factoryNodes.add(new PointF(436,835));//50
 
-        factoryNodes.add(new PointF(63,824)); //52 机房第12排机柜左坐标
-        factoryNodes.add(new PointF(266,824)); //53 机房第12排机柜中间坐标
-        factoryNodes.add(new PointF(492,824)); //54 机房第12排机柜右坐标
+        factoryNodes.add(new PointF(58,879));//51 B通道机柜第2排
+        factoryNodes.add(new PointF(232,879));//52
+        factoryNodes.add(new PointF(436,879));//53
 
-        factoryNodes.add(new PointF(63,871)); //55 机房第13排机柜左坐标
-        factoryNodes.add(new PointF(266,871)); //56 机房第13排机柜中间坐标
-        factoryNodes.add(new PointF(492,871)); //57 机房第13排机柜右坐标
+        factoryNodes.add(new PointF(58,922));//54 B通道机柜第3排
+        factoryNodes.add(new PointF(232,922));//55
+        factoryNodes.add(new PointF(436,922));//56
 
-        factoryNodes.add(new PointF(63,910)); //58 机房第14排机柜左坐标
-        factoryNodes.add(new PointF(266,910)); //59 机房第14排机柜中间坐标
-        factoryNodes.add(new PointF(492,910)); //60 机房第14排机柜右坐标
+        factoryNodes.add(new PointF(58,956));//57 B通道机柜第4排
+        factoryNodes.add(new PointF(232,956));//58
+        factoryNodes.add(new PointF(436,956));//59
 
-        factoryNodes.add(new PointF(63,953)); //61 机房第15排机柜左坐标
-        factoryNodes.add(new PointF(266,953)); //62 机房第15排机柜中间坐标
-        factoryNodes.add(new PointF(492,953)); //63 机房第15排机柜右坐标
+        factoryNodes.add(new PointF(58,989));//60 B通道机柜第5排
+        factoryNodes.add(new PointF(232,989));//61
+        factoryNodes.add(new PointF(436,989));//62
 
-        factoryNodes.add(new PointF(63,996)); //64 机房第16排机柜左坐标
-        factoryNodes.add(new PointF(266,996)); //65 机房第16排机柜中间坐标
-        factoryNodes.add(new PointF(492,996)); //66 机房第16排机柜右坐标
+        factoryNodes.add(new PointF(58,1035));//63 B通道机柜第6排
+        factoryNodes.add(new PointF(232,1035));//64
+        factoryNodes.add(new PointF(436,1035));//65
 
-        factoryNodes.add(new PointF(63,1038)); //67 机房第17排机柜左坐标
-        factoryNodes.add(new PointF(266,1038)); //68 机房第17排机柜中间坐标
-        factoryNodes.add(new PointF(492,1038)); //69 机房第17排机柜右坐标
+        factoryNodes.add(new PointF(58,1075));//66 B通道机柜第7排
+        factoryNodes.add(new PointF(232,1075));//67
+        factoryNodes.add(new PointF(436,1075));//68
 
-        factoryNodes.add(new PointF(63,1080)); //70 机房第18排机柜左坐标
-        factoryNodes.add(new PointF(266,1080)); //71 机房第18排机柜中间坐标
-        factoryNodes.add(new PointF(492,1080)); //72 机房第18排机柜右坐标
+        factoryNodes.add(new PointF(58,1110));//69 B通道机柜第8排
+        factoryNodes.add(new PointF(232,1110));//70
+        factoryNodes.add(new PointF(436,1110));//71
 
-        factoryNodes.add(new PointF(47,1120)); //73 机房左下角坐标
-        factoryNodes.add(new PointF(94,1120)); //74 机房下走廊中间坐标1
-        factoryNodes.add(new PointF(152,1120)); //75 机房下走廊中间坐标2
-        factoryNodes.add(new PointF(211,1120)); //76 机房下走廊中间坐标3
-        factoryNodes.add(new PointF(266,1120)); //77 机房下走廊中间坐标4,与B通道门口相对
-        factoryNodes.add(new PointF(266,1095)); //78 机房下走廊中间坐标与B通道门口交汇点
-        factoryNodes.add(new PointF(327,1120)); //79 机房下走廊中间坐标5
-        factoryNodes.add(new PointF(367,1120)); //80 机房下走廊中间坐标6
-        factoryNodes.add(new PointF(439,1120)); //81 机房下走廊中间坐标7
-        factoryNodes.add(new PointF(492,1120)); //82 机房下走廊中间坐标8
+        factoryNodes.add(new PointF(58,1144));//72 B通道机柜第9排
+        factoryNodes.add(new PointF(232,1144));//73
+        factoryNodes.add(new PointF(436,1144));//74
+
+        factoryNodes.add(new PointF(58,1185));//75 B通道机柜第10排
+        factoryNodes.add(new PointF(232,1185));//76
+        factoryNodes.add(new PointF(436,1185));//77
+
+        factoryNodes.add(new PointF(58,1229));//78 B通道机柜第11排
+        factoryNodes.add(new PointF(232,1229));//79
+        factoryNodes.add(new PointF(436,1229));//80
+
+
+        factoryNodes.add(new PointF(58,1246));//81 B通道门口
+        factoryNodes.add(new PointF(232,1246));//82
+        factoryNodes.add(new PointF(436,1246));//83
+
+        factoryNodes.add(new PointF(58,1318)); //84 过道中心位置
+        factoryNodes.add(new PointF(99,1318)); //85 过道与通道机柜边缘
+        factoryNodes.add(new PointF(147,1318)); //86 机柜中间坐标
+        factoryNodes.add(new PointF(184,1318)); //87 机柜边缘
+        factoryNodes.add(new PointF(232,1318));// 88 中间通道坐标
+        factoryNodes.add(new PointF(282,1318));// 89中间通道右边边缘
+        factoryNodes.add(new PointF(327,1318));// 90 A通道右边机柜中心位置
+        factoryNodes.add(new PointF(370,1318));// 91 A通道机柜右边边缘位置
+        factoryNodes.add(new PointF(436,1318));// 92 A通道右走廊坐标
         return factoryNodes;
     }
 
@@ -440,115 +453,139 @@ public class MapConfigData {
         List<PointF> factoryNodesContact=new ArrayList<PointF>();
         factoryNodesContact.add(new PointF(0,1));
         factoryNodesContact.add(new PointF(0,12));
-
         factoryNodesContact.add(new PointF(1,2));
         factoryNodesContact.add(new PointF(2,3));
-
         factoryNodesContact.add(new PointF(3,4));
-
         factoryNodesContact.add(new PointF(4,5));
-        factoryNodesContact.add(new PointF(4,6));
-        factoryNodesContact.add(new PointF(5,13));
+        factoryNodesContact.add(new PointF(4,11));
+        factoryNodesContact.add(new PointF(5,6));
         factoryNodesContact.add(new PointF(6,7));
         factoryNodesContact.add(new PointF(7,8));
         factoryNodesContact.add(new PointF(8,9));
+        factoryNodesContact.add(new PointF(8,14));
         factoryNodesContact.add(new PointF(9,10));
         factoryNodesContact.add(new PointF(9,14));
-        factoryNodesContact.add(new PointF(10,11));
-        factoryNodesContact.add(new PointF(10,14));
+        factoryNodesContact.add(new PointF(11,13));
+        //A通道第1排
         factoryNodesContact.add(new PointF(12,15));
         factoryNodesContact.add(new PointF(13,16));
         factoryNodesContact.add(new PointF(14,17));
+
+        //A通道第2排
         factoryNodesContact.add(new PointF(15,18));
         factoryNodesContact.add(new PointF(16,19));
         factoryNodesContact.add(new PointF(17,20));
 
+        //A通道第3排
         factoryNodesContact.add(new PointF(18,21));
         factoryNodesContact.add(new PointF(19,22));
         factoryNodesContact.add(new PointF(20,23));
 
+        //A通道第4排
         factoryNodesContact.add(new PointF(21,24));
         factoryNodesContact.add(new PointF(22,25));
         factoryNodesContact.add(new PointF(23,26));
 
+        //A通道第5排
         factoryNodesContact.add(new PointF(24,27));
         factoryNodesContact.add(new PointF(25,28));
         factoryNodesContact.add(new PointF(26,29));
 
+        //A通道第6排
         factoryNodesContact.add(new PointF(27,30));
         factoryNodesContact.add(new PointF(28,31));
         factoryNodesContact.add(new PointF(29,32));
 
+        //A通道第7排
         factoryNodesContact.add(new PointF(30,33));
-        factoryNodesContact.add(new PointF(31,38));
+        factoryNodesContact.add(new PointF(31,34));
         factoryNodesContact.add(new PointF(32,35));
+
+        //过道
         factoryNodesContact.add(new PointF(33,36));
-        factoryNodesContact.add(new PointF(33,40));
-
-        factoryNodesContact.add(new PointF(34,36));
-        factoryNodesContact.add(new PointF(34,37));
-        factoryNodesContact.add(new PointF(34,38));
-        factoryNodesContact.add(new PointF(34,39));
-
-        factoryNodesContact.add(new PointF(35,37));
-        factoryNodesContact.add(new PointF(35,42));
-        factoryNodesContact.add(new PointF(39,41));
-
-        factoryNodesContact.add(new PointF(40,43));
-        factoryNodesContact.add(new PointF(41,44));
-        factoryNodesContact.add(new PointF(42,45));
-
-        factoryNodesContact.add(new PointF(43,46));
+      //  factoryNodesContact.add(new PointF(34,39));
+        factoryNodesContact.add(new PointF(34,40));
+      //  factoryNodesContact.add(new PointF(34,41));
+        factoryNodesContact.add(new PointF(35,44));
+        factoryNodesContact.add(new PointF(36,37));
+        factoryNodesContact.add(new PointF(36,45));
+        factoryNodesContact.add(new PointF(37,38));
+        factoryNodesContact.add(new PointF(38,39));
+        factoryNodesContact.add(new PointF(39,40));
+        factoryNodesContact.add(new PointF(40,41));
+        factoryNodesContact.add(new PointF(40,46));
+        factoryNodesContact.add(new PointF(41,42));
+        factoryNodesContact.add(new PointF(42,43));
+        factoryNodesContact.add(new PointF(43,44));
         factoryNodesContact.add(new PointF(44,47));
-        factoryNodesContact.add(new PointF(45,48));
 
+        factoryNodesContact.add(new PointF(45,48));
         factoryNodesContact.add(new PointF(46,49));
         factoryNodesContact.add(new PointF(47,50));
-        factoryNodesContact.add(new PointF(48,51));
 
+        //B通道第1排
+        factoryNodesContact.add(new PointF(48,51));
         factoryNodesContact.add(new PointF(49,52));
         factoryNodesContact.add(new PointF(50,53));
+        //B通道第2排
         factoryNodesContact.add(new PointF(51,54));
-
         factoryNodesContact.add(new PointF(52,55));
         factoryNodesContact.add(new PointF(53,56));
+        //B通道第3排
         factoryNodesContact.add(new PointF(54,57));
-
         factoryNodesContact.add(new PointF(55,58));
         factoryNodesContact.add(new PointF(56,59));
+        //B通道第4排
         factoryNodesContact.add(new PointF(57,60));
-
         factoryNodesContact.add(new PointF(58,61));
         factoryNodesContact.add(new PointF(59,62));
+        //B通道第5排
         factoryNodesContact.add(new PointF(60,63));
-
         factoryNodesContact.add(new PointF(61,64));
         factoryNodesContact.add(new PointF(62,65));
+        //B通道第6排
         factoryNodesContact.add(new PointF(63,66));
-
         factoryNodesContact.add(new PointF(64,67));
         factoryNodesContact.add(new PointF(65,68));
+        //B通道第7排
         factoryNodesContact.add(new PointF(66,69));
-
         factoryNodesContact.add(new PointF(67,70));
         factoryNodesContact.add(new PointF(68,71));
+        //B通道第8排
         factoryNodesContact.add(new PointF(69,72));
-
         factoryNodesContact.add(new PointF(70,73));
-        factoryNodesContact.add(new PointF(71,78));
-        factoryNodesContact.add(new PointF(72,82));
+        factoryNodesContact.add(new PointF(71,74));
+        //B通道第9排
+        factoryNodesContact.add(new PointF(72,75));
+        factoryNodesContact.add(new PointF(73,76));
+        factoryNodesContact.add(new PointF(74,77));
 
-        factoryNodesContact.add(new PointF(73,74));
-        factoryNodesContact.add(new PointF(74,75));
-        factoryNodesContact.add(new PointF(75,76));
-        factoryNodesContact.add(new PointF(76,77));
-        factoryNodesContact.add(new PointF(77,78));
-        factoryNodesContact.add(new PointF(78,79));
-        factoryNodesContact.add(new PointF(79,80));
-        factoryNodesContact.add(new PointF(80,81));
-        factoryNodesContact.add(new PointF(81,82));
+        //B通道第10排
+        factoryNodesContact.add(new PointF(75,78));
+        factoryNodesContact.add(new PointF(76,79));
+        factoryNodesContact.add(new PointF(77,80));
+        //B通道第11排
+        factoryNodesContact.add(new PointF(78,81));
+        factoryNodesContact.add(new PointF(79,82));
+        factoryNodesContact.add(new PointF(80,83));
+
+        //B通道下走廊
+        factoryNodesContact.add(new PointF(81,84));
+        factoryNodesContact.add(new PointF(82,86));
+        factoryNodesContact.add(new PointF(82,87));
+        factoryNodesContact.add(new PointF(82,88));
+        factoryNodesContact.add(new PointF(82,89));
+        factoryNodesContact.add(new PointF(82,90));
+        factoryNodesContact.add(new PointF(83,92));
+        factoryNodesContact.add(new PointF(84,85));
+        factoryNodesContact.add(new PointF(85,86));
+        factoryNodesContact.add(new PointF(86,87));
+        factoryNodesContact.add(new PointF(87,88));
+        factoryNodesContact.add(new PointF(88,89));
+        factoryNodesContact.add(new PointF(89,90));
+        factoryNodesContact.add(new PointF(90,91));
+        factoryNodesContact.add(new PointF(91,92));
 
         return factoryNodesContact;
     }
-
 }
